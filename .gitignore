@@ -1,0 +1,3 @@
+venv/
+goose.egg-info/
+goose/**/__pycache__
