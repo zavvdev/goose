@@ -5,31 +5,37 @@ class Menu:
     self.menu_list = menu_list
     self.selected_item = None
     self.custom_text = []
+    self.last_custom_text_pos = 1
 
   def get_selected_item(self):
     return self.selected_item
 
-  def place_custom_text(self, stdscr, h, w):
+  def place_custom_text(self, stdscr):
     for i, row in enumerate(self.custom_text):
+      l = len(self.custom_text)
       x = 2
-      y = 2 - len(self.custom_text) // 2 + i
+      y = 1 if l == 1 else abs(2 - l // 2) + i
+
+      if i == len(self.custom_text) - 1:
+        self.last_custom_text_pos = i
+
       stdscr.addstr(y, x, row)
 
   def draw_menu(self, stdscr, selected_row_idx):
     stdscr.clear()
     h, w = stdscr.getmaxyx()
-    self.place_custom_text(stdscr, h, w)
+    self.place_custom_text(stdscr)
 
     for i, row in enumerate(self.menu_list):
-      # x = w // 2 - len(row) // 2
-      y = h // 2 - len(self.menu_list) // 2 + i
+      x = 2
+      y = 1 + i if self.custom_text == [] else self.last_custom_text_pos + i + 3
 
       if i == selected_row_idx:
         stdscr.attron(curses.color_pair(1))
-        stdscr.addstr(y, 2, row)
+        stdscr.addstr(y, x, row)
         stdscr.attroff(curses.color_pair(1))
       else:
-        stdscr.addstr(y, 2, row)
+        stdscr.addstr(y, x, row)
 
     stdscr.refresh()
 
