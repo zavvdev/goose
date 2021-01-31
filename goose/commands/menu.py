@@ -1,5 +1,4 @@
 import curses
-import time
 
 menu_items = ["Desktop", "Documents", "Public", "Music", "Exit"]
 
