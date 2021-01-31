@@ -27,8 +27,10 @@ class Menu:
     self.place_custom_text(stdscr)
 
     for i, row in enumerate(self.menu_list):
+      is_no_custom_text = self.custom_text == []
+      d = self.last_custom_text_pos + i + 3
       x = 2
-      y = 1 + i if self.custom_text == [] else self.last_custom_text_pos + i + 3
+      y = 1 + i if is_no_custom_text else d
 
       if i == selected_row_idx:
         stdscr.attron(curses.color_pair(1))
