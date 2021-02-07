@@ -1,0 +1,16 @@
+{
+  "title": "Login to the remote FTP server",
+  "labels": {
+    "host": "Host:",
+    "user": "Username:",
+    "passwd": "Password:"
+  },
+  "buttons": {
+    "login": "Login",
+    "exit": "Exit"
+  },
+  "messages": {
+    "connecting": "Connecting..",
+    "error": "Error"
+  }
+}
