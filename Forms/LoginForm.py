@@ -4,6 +4,9 @@ from constants.settings import testFtp
 from constants.formAccessors import formAccessors
 from utils.getNamespace import getNamespace
 from constants.nsAccessors import nsAccessors
+from utils.writeToFile import writeToFile
+from utils.delFile import delFile
+from utils.readFromFile import readFromFile
 
 ns = getNamespace(nsAccessors["Login"])
 
@@ -12,18 +15,28 @@ class LoginButon(nps.ButtonPress):
     host = self.parent.host.value
     user = self.parent.username.value
     passwd = self.parent.passwd.value
-
     try:
       nps.notify_wait(ns["messages"]["connecting"])
       ftp = FTP(host)
       ftp.login(user=user, passwd=passwd)
       # data = ftp.retrlines('LIST')
-      self.parent.parentApp.change_form(formAccessors["Workspace"])
+      
+      login_data = {
+        "host": host,
+        "username": user,
+        "password": passwd,
+      }
+      writeToFile(login_data, "data/login_data.json")
+
+      if readFromFile("data/login_data.json"):
+        self.parent.parentApp.change_form(formAccessors["Workspace"])
     except:
+      delFile("data/login_data.json")
       nps.notify_confirm(ns["messages"]["error"], editw=1)
 
 class ExitButton(nps.ButtonPress):
   def whenPressed(self):
+    delFile("data/login_data.json")
     self.parent.parentApp.switchForm(None)
 
 class LoginForm(nps.FormBaseNew):
