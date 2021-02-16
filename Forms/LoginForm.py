@@ -7,6 +7,7 @@ from constants.nsAccessors import nsAccessors
 from utils.writeToFile import writeToFile
 from utils.delFile import delFile
 from utils.readFromFile import readFromFile
+import time
 
 ns = getNamespace(nsAccessors["Login"])
 
@@ -28,8 +29,7 @@ class LoginButon(nps.ButtonPress):
       }
       writeToFile(login_data, "data/login_data.json")
 
-      if readFromFile("data/login_data.json"):
-        self.parent.parentApp.change_form(formAccessors["Workspace"])
+      self.parent.parentApp.change_form(formAccessors["Workspace"]) 
     except:
       delFile("data/login_data.json")
       nps.notify_confirm(ns["messages"]["error"], editw=1)
