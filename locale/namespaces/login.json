@@ -1,16 +1,17 @@
 {
-  "title": "Login to the remote FTP server",
+  "greeting": "\n\n********************************************\n*                                          *\n*   Welcome to Goose! A CLI ftp-client.    *\n*                                          *\n********************************************\n\n",
+  "title": "Login to the remote FTP server\n",
   "labels": {
-    "host": "Host:",
-    "user": "Username:",
-    "passwd": "Password:"
+    "host": "Host: ",
+    "user": "Username: ",
+    "passwd": "Password: " 
   },
   "buttons": {
     "login": "Login",
     "exit": "Exit"
   },
   "messages": {
-    "connecting": "Connecting..",
-    "error": "Error"
+    "connecting": "\nConnecting..\n",
+    "error": "Unable to connect to remote FTP server.\nPlease, check your login data and try again"
   }
 }
