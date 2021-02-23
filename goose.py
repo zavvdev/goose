@@ -68,7 +68,7 @@ def rush(i):
     print(C.GREEN + "Connected successful!" + C.ENDC)
     ftp.retrlines("LIST") 
   else:
-    print("Error")
+    print(C.RED + "Error" + C.ENDC)
   pass
 
 #--------# Main #--------#
