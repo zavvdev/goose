@@ -15,7 +15,7 @@ Actions = {
 
   "Jump": {
     "act": "jump",
-    "local": "home",
+    "local": "local",
     "remote": "remote"
   },
 

@@ -42,7 +42,7 @@ class Goose:
       self.ftp.login(user=d["u"], passwd=d["p"])
       self.connected = True
       self.env = envs["Remote"]
-      self.pathRemote = "/"
+      self.pathRemote = self.ftp.pwd()
       return True
     except:
       return False
@@ -128,6 +128,14 @@ class Goose:
     else:
       print(self.loginData["u"])
 
+  #-----------------------------------
+
+  def exit(self):
+    try:
+      self.ftp.quit()
+    except:
+      pass
+
 
   #------------- Run -------------#
 
@@ -136,13 +144,16 @@ class Goose:
     print(styledText(textStyles["Bold"] + commonNS["app_name"]))
 
     while True:
-      env = commonNS["envs"]["remote"] if self.env == envs["Remote"] else commonNS["envs"]["local"]
+      isRemote = self.env == envs["Remote"]
+      env = commonNS["envs"]["remote"] if isRemote else commonNS["envs"]["local"]
+      style = textStyles["Cyan"] + textStyles["Bold"]
       inputText = styledText(
-        textStyles["Cyan"] + textStyles["Bold"] + commonNS["input"].format(env=env)
+        style + commonNS["input"].format(env=env)
       )
       self.action = input(inputText)
 
       if isExit(self.action):
+        self.exit()
         break
       elif isClear(self.action):
         self.clear()
