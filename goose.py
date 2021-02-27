@@ -1,92 +1,77 @@
 from ftplib import FTP
+from constants.settings import ColorPalette as C
+from helpers.ActionVerificators.isExit import isExit
+from helpers.ActionVerificators.isHelp import isHelp
+from helpers.ActionVerificators.isRush import isRush
+from helpers.getNamespace import getNamespace
+from constants.nsAccessors import nsAccessors
 
-#--------# Settings #--------#
+commonNS = getNamespace(nsAccessors["Common"])
+helpNS = getNamespace(nsAccessors["Help"])
+rushNS = getNamespace(nsAccessors["Rush"])
 
-ftp = None
+class Goose:
+  def __init__(self):
+    ftp = None
+    loginData = {}
+    action = ""
 
-class C:
-  VIOLET = '\033[95m'
-  BLUE = '\033[94m'
-  CYAN = '\033[96m'
-  GREEN = '\033[92m'
-  YELLOW = '\033[93m'
-  RED = '\033[91m'
-  ENDC = '\033[0m'
-  BOLD = '\033[1m'
-  UNDERLINE = '\033[4m'
+  def login(self):
+    d = self.loginData
+    try:
+      self.ftp = FTP(d["h"])
+      self.ftp.login(user=d["u"], passwd=d["p"])
+      return True
+    except:
+      return False
+    pass
 
-#--------# Commangs verificators #--------#
+  def help(self):
+    print(helpNS["help"])
+    pass
 
-def isExit(i):
-  return i == "exit" or i == "x"
-  pass
+  def rush(self):
+    i = self.action
+    s = i.split(" ")
+    l = len(s)
 
-def isHelp(i):
-  return i == "help" or i == "h"
-  pass
+    msg = rushNS["connecting"].format(host=s[1])
+    print(C.VIOLET + msg + C.ENDC)
 
-def isRush(i):
-  s = i.split(" ")
-  rushHere = s[0] == "rush"
-  hAccessorHere = len(s) == 2
-  uAccessorHere = len(s) == 4 and s[2] == "as"
-  pAccessorHere = len(s) == 6 and s[2] == "as" and s[4] == "with"
-  return rushHere and (hAccessorHere or uAccessorHere or pAccessorHere)
-  pass
-
-#--------# Utils #--------#
-
-def login(d):
-  try:
-    global ftp
-    ftp = FTP(d["h"])
-    ftp.login(user=d["u"], passwd=d["p"])
-    return True
-  except:
-    return False
-
-#--------# Actions #--------#
-
-def help():
-  pass
-
-def rush(i):
-  s = i.split(" ")
-  l = len(s)
-  d = {}
-
-  print(C.VIOLET + "Rushing to " + s[1] + ".." + C.ENDC)
-
-  if l == 2:
-    d = { "h": s[1], "u": "", "p": ""}
-  elif l == 4:
-    d = { "h": s[1], "u": s[3], "p": "" }
-  else:
-    d = { "h": s[1], "u": s[3], "p": s[5] }
-
-  if login(d):
-    print(C.GREEN + "Connected successful!" + C.ENDC)
-    ftp.retrlines("LIST") 
-  else:
-    print(C.RED + "Error" + C.ENDC)
-  pass
-
-#--------# Main #--------#
-
-def goose():
-  print(C.BOLD + "\nGoose v0.0.1. FTP cli tool." + C.ENDC)
-
-  while True:
-    i = input(C.CYAN + C.BOLD + "goose~>: " + C.ENDC)
-
-    if isExit(i):
-      break
-    elif isHelp(i):
-      print("Help will be here")
-    elif isRush(i):
-      rush(i)
+    if l == 2:
+      self.loginData = { "h": s[1], "u": "", "p": ""}
+    elif l == 4:
+      self.loginData = { "h": s[1], "u": s[3], "p": "" }
     else:
-      print(C.YELLOW + "Goose dont understand u. Type \"help\" or \"h\" for list of commands" + C.ENDC)
-  pass
+      self.loginData = { "h": s[1], "u": s[3], "p": s[5] }
 
-goose()
+    if self.login():
+      msg = rushNS["connected"].format(host=self.loginData["h"])
+      print(C.GREEN + msg + C.ENDC)
+      self.ftp.retrlines("LIST") 
+    else:
+      errorMsg = rushNS["connecting_error"]
+      print(C.RED + errorMsg + C.ENDC)
+    pass
+
+  def run(self):
+    print(C.BOLD + commonNS["app_name"] + C.ENDC)
+
+    while True:
+      self.action = input(C.CYAN + C.BOLD + commonNS["input"] + C.ENDC)
+
+      if isExit(self.action):
+        break
+      elif isHelp(self.action):
+        self.help()
+      elif isRush(self.action):
+        self.rush()
+      else:
+        print(C.YELLOW + commonNS["not_found"] + C.ENDC)
+    pass
+
+goose = Goose()
+goose.run()
+
+
+  

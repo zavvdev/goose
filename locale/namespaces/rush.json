@@ -1,0 +1,5 @@
+{
+  "connecting": "Rushing to {host}..",
+  "connected": "Successfuly connected to {host}!",
+  "connecting_error": "Error"
+}
