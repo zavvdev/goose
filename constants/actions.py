@@ -9,5 +9,5 @@ Actions = {
     "h": "rush",
     "u": "as",
     "p": "with",
-  }
+  },
 }

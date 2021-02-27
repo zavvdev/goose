@@ -1,10 +1,12 @@
 from ftplib import FTP
-from constants.settings import ColorPalette as C
+from constants.textStyles import textStyles
 from helpers.ActionVerificators.isExit import isExit
 from helpers.ActionVerificators.isHelp import isHelp
 from helpers.ActionVerificators.isRush import isRush
 from helpers.getNamespace import getNamespace
 from constants.nsAccessors import nsAccessors
+from helpers.styledText import styledText
+from constants.textStyles import textStyles
 
 commonNS = getNamespace(nsAccessors["Common"])
 helpNS = getNamespace(nsAccessors["Help"])
@@ -36,7 +38,7 @@ class Goose:
     l = len(s)
 
     msg = rushNS["connecting"].format(host=s[1])
-    print(C.VIOLET + msg + C.ENDC)
+    print(styledText(textStyles["Violet"] + msg))
 
     if l == 2:
       self.loginData = { "h": s[1], "u": "", "p": ""}
@@ -47,18 +49,20 @@ class Goose:
 
     if self.login():
       msg = rushNS["connected"].format(host=self.loginData["h"])
-      print(C.GREEN + msg + C.ENDC)
-      self.ftp.retrlines("LIST") 
+      print(styledText(textStyles["Green"] + msg))
     else:
       errorMsg = rushNS["connecting_error"]
-      print(C.RED + errorMsg + C.ENDC)
+      print(styledText(textStyles["Red"] + errorMsg))
     pass
 
   def run(self):
-    print(C.BOLD + commonNS["app_name"] + C.ENDC)
+    print(styledText(textStyles["Bold"] + commonNS["app_name"]))
 
     while True:
-      self.action = input(C.CYAN + C.BOLD + commonNS["input"] + C.ENDC)
+      inputText = styledText(
+        textStyles["Cyan"] + textStyles["Bold"] + commonNS["input"]
+      )
+      self.action = input(inputText)
 
       if isExit(self.action):
         break
@@ -67,7 +71,7 @@ class Goose:
       elif isRush(self.action):
         self.rush()
       else:
-        print(C.YELLOW + commonNS["not_found"] + C.ENDC)
+        print(styledText(textStyles["Yellow"] + commonNS["not_found"]))
     pass
 
 goose = Goose()
