@@ -10,4 +10,14 @@ Actions = {
     "u": "as",
     "p": "with",
   },
+
+  "Ls": "ls",
+
+  "Jump": {
+    "act": "jump",
+    "local": "home",
+    "remote": "remote"
+  },
+
+  "Clear": "clear"
 }
