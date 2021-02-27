@@ -19,5 +19,10 @@ Actions = {
     "remote": "remote"
   },
 
-  "Clear": "clear"
+  "Clear": "clear",
+
+  "WhereAmI": "whereami",
+  "WhereAmIShort": "pwd",
+
+  "WhoAmI": "whoami"
 }

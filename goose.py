@@ -6,6 +6,8 @@ from helpers.ActionVerificators.isRush import isRush
 from helpers.ActionVerificators.isLs import isLs
 from helpers.ActionVerificators.isJump import isJump
 from helpers.ActionVerificators.isClear import isClear
+from helpers.ActionVerificators.isWhereAmI import isWhereAmI
+from helpers.ActionVerificators.isWhoAmI import isWhoAmI
 from helpers.getNamespace import getNamespace
 from constants.nsAccessors import nsAccessors
 from helpers.styledText import styledText
@@ -40,6 +42,7 @@ class Goose:
       self.ftp.login(user=d["u"], passwd=d["p"])
       self.connected = True
       self.env = envs["Remote"]
+      self.pathRemote = "/"
       return True
     except:
       return False
@@ -109,6 +112,22 @@ class Goose:
     print(execCmd("clear"))
     pass
 
+  #-----------------------------------
+
+  def whereAmI(self):
+    if self.env == envs["Local"]:
+      print(self.pathLocal)
+    else:
+      print(self.pathRemote)
+
+  #-----------------------------------
+
+  def whoAmI(self):
+    if self.env == envs["Local"]:
+      print(execCmd("whoami"))
+    else:
+      print(self.loginData["u"])
+
 
   #------------- Run -------------#
 
@@ -135,6 +154,10 @@ class Goose:
         self.ls()
       elif isJump(self.action):
         self.jump()
+      elif isWhereAmI(self.action):
+        self.whereAmI()
+      elif isWhoAmI(self.action):
+        self.whoAmI()
       else:
         print(styledText(textStyles["Yellow"] + commonNS["not_found"]))
     pass
