@@ -1,6 +1,6 @@
 import os
 import shutil
-from ftplib import FTP
+from ftpretty import ftpretty as FTP
 from constants.textStyles import textStyles
 from helpers.ActionVerificators.isExit import isExit
 from helpers.ActionVerificators.isHelp import isHelp
@@ -51,8 +51,7 @@ class Goose:
   def login(self):
     d = self.loginData
     try:
-      self.ftp = FTP(d["h"])
-      self.ftp.login(user=d["u"], passwd=d["p"])
+      self.ftp = FTP(d["h"], d["u"], d["p"])
       self.connected = True
       self.env = envs["Remote"]
       self.pathRemote = self.ftp.pwd()
@@ -210,7 +209,11 @@ class Goose:
         else:
           print(getErrorMsg(deleteNS["error"].format(target=target)))
       else:
-        print("Delete from remote here")
+        remoteTargetPath = getNextPath(self.pathRemote, target)
+        confirmMsg = deleteNS["delete_dir"].format(dirName=target)
+        confirmDelDir = getUserConfirm(confirmMsg)
+        if confirmDelDir:
+          self.ftp.rmd(remoteTargetPath)
     except:
       print(getErrorMsg(deleteNS["error"].format(target=target)))
             
