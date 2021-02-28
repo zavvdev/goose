@@ -1,4 +1,5 @@
 import os
+import shutil
 from ftplib import FTP
 from constants.textStyles import textStyles
 from helpers.ActionVerificators.isExit import isExit
@@ -11,6 +12,7 @@ from helpers.ActionVerificators.isWhereAmI import isWhereAmI
 from helpers.ActionVerificators.isWhoAmI import isWhoAmI
 from helpers.ActionVerificators.isCd import isCd
 from helpers.ActionVerificators.isMkdir import isMkdir
+from helpers.ActionVerificators.isDelete import isDelete
 from helpers.getNamespace import getNamespace
 from constants.nsAccessors import nsAccessors
 from helpers.styledText import styledText
@@ -19,6 +21,10 @@ from constants.environments import environments as envs
 from constants.actions import Actions as Act
 from helpers.execCmd import execCmd
 from helpers.getNextPath import getNextPath
+from helpers.getUserConfirm import getUserConfirm
+from helpers.getErrorMsg import getErrorMsg
+from helpers.getSuccessMsg import getSuccessMsg
+from helpers.getInfoMsg import getInfoMsg
 
 commonNS = getNamespace(nsAccessors["Common"])
 helpNS = getNamespace(nsAccessors["Help"])
@@ -26,6 +32,7 @@ rushNS = getNamespace(nsAccessors["Rush"])
 jumpNS = getNamespace(nsAccessors["Jump"])
 cdNS = getNamespace(nsAccessors["Cd"])
 mkdirNS = getNamespace(nsAccessors["Mkdir"])
+deleteNS = getNamespace(nsAccessors["Delete"])
 
 class Goose:
   def __init__(self):
@@ -81,10 +88,9 @@ class Goose:
 
     if self.login():
       msg = rushNS["connected"].format(host=self.loginData["h"])
-      print(styledText(textStyles["Green"] + msg))
+      print(getSuccessMsg(msg))
     else:
-      errorMsg = rushNS["connecting_error"]
-      print(styledText(textStyles["Red"] + errorMsg))
+      print(getErrorMsg(rushNS["connecting_error"]))
     pass
 
   #-----------------------------------
@@ -112,7 +118,7 @@ class Goose:
       if self.connected:
         self.env = envs["Remote"]
       else:
-        print(styledText(textStyles["Red"] + jumpNS["not_connected"]))
+        print(getErrorMsg(jumpNS["not_connected"]))
     pass
 
   #-----------------------------------
@@ -156,16 +162,14 @@ class Goose:
         os.chdir(nextLocalPath)
         self.pathLocal = nextLocalPath  
       else:
-        errorMsg = cdNS["error"].format(dest=nextLocalPath)
-        print(styledText(textStyles["Red"] + errorMsg))
+        print(getErrorMsg(cdNS["error"].format(dest=nextLocalPath)))
     else:
       try:
         nextRemotePath = getNextPath(self.pathRemote, dest)
         self.ftp.cwd(nextRemotePath)
         self.pathRemote = nextRemotePath 
       except:
-        errorMsg = cdNS["error"].format(dest=nextRemotePath)
-        print(styledText(textStyles["Red"] + errorMsg))
+        print(getErrorMsg(cdNS["error"].format(dest=nextRemotePath)))
     pass
 
   #-----------------------------------
@@ -181,10 +185,36 @@ class Goose:
         remoteDirPath = getNextPath(self.pathRemote, dirName)
         self.ftp.mkd(remoteDirPath)
     except:
-      msg = mkdirNS["error"].format(dirName=dirName)
-      errorMsg = styledText(textStyles["Red"] + msg)
-      print(errorMsg)
+      print(getErrorMsg(mkdirNS["error"].format(dirName=dirName)))
 
+    pass
+
+  #-----------------------------------
+
+  def delete(self):
+    target = self.action.split(" ")[1]
+
+    try:
+      if self.env == envs["Local"]:
+        localTargetPath = getNextPath(self.pathLocal, target)
+        if os.path.isfile(localTargetPath):
+          confirmMsg = deleteNS["delete_file"].format(fileName=target)
+          confirmDelFile = getUserConfirm(confirmMsg)
+          if confirmDelFile:
+            os.remove(localTargetPath)
+        elif os.path.isdir(localTargetPath):
+          confirmMsg = deleteNS["delete_dir"].format(dirName=target)
+          confirmDelDir = getUserConfirm(confirmMsg)
+          if confirmDelDir:
+            shutil.rmtree(localTargetPath)
+        else:
+          print(getErrorMsg(deleteNS["error"].format(target=target)))
+      else:
+        print("Delete from remote here")
+    except:
+      print(getErrorMsg(deleteNS["error"].format(target=target)))
+            
+    pass
 
   #------------- Run -------------#
 
@@ -223,9 +253,10 @@ class Goose:
           self.cd()
         elif isMkdir(self.action):
           self.mkdir()
+        elif isDelete(self.action):
+          self.delete()
         else:
-          print(styledText(textStyles["Yellow"] + commonNS["not_found"]))
+          print(getInfoMsg(commonNS["not_found"]))
       except:
-        errorMsg = commonNS["unexpected_error"]
-        print(styledText(textStyles["Red"] + errorMsg))
+        print(getErrorMsg(commonNS["unexpected_error"]))
     pass

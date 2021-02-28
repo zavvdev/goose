@@ -27,5 +27,15 @@ Actions = {
   "WhoAmI": "whoami",
 
   "Cd": "cd",
-  "Mkdir": "dir"
+
+  "Mkdir": "dir",
+
+  "Delete": "del",
+
+  "Confirm": {
+    "Yes": "yes",
+    "No": "no",
+    "YesShort": "y",
+    "NoShort": "n",
+  }
 }

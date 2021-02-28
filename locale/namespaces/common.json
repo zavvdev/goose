@@ -6,5 +6,8 @@
     "local": "",
     "remote": "(remote)"
   },
-  "unexpected_error": "It seems something went really wrong with Goose.\nPlease, describe the error on the project homepage: https://github.com/unsxxndxrk/goose"
+  "unexpected_error": "It seems something went really wrong with Goose.\nPlease, describe the error on the project homepage: https://github.com/unsxxndxrk/goose",
+  "confirm": {
+    "tip": "(Yes/No): "
+  }
 }

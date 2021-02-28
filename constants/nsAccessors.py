@@ -5,4 +5,5 @@ nsAccessors = {
   "Jump": "jump",
   "Cd": "cd",
   "Mkdir": "mkdir",
+  "Delete": "delete",
 }
