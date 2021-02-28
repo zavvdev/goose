@@ -4,4 +4,5 @@ nsAccessors = {
   "Rush": "rush",
   "Jump": "jump",
   "Cd": "cd",
+  "Mkdir": "mkdir",
 }

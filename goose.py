@@ -10,6 +10,7 @@ from helpers.ActionVerificators.isClear import isClear
 from helpers.ActionVerificators.isWhereAmI import isWhereAmI
 from helpers.ActionVerificators.isWhoAmI import isWhoAmI
 from helpers.ActionVerificators.isCd import isCd
+from helpers.ActionVerificators.isMkdir import isMkdir
 from helpers.getNamespace import getNamespace
 from constants.nsAccessors import nsAccessors
 from helpers.styledText import styledText
@@ -24,6 +25,7 @@ helpNS = getNamespace(nsAccessors["Help"])
 rushNS = getNamespace(nsAccessors["Rush"])
 jumpNS = getNamespace(nsAccessors["Jump"])
 cdNS = getNamespace(nsAccessors["Cd"])
+mkdirNS = getNamespace(nsAccessors["Mkdir"])
 
 class Goose:
   def __init__(self):
@@ -166,6 +168,23 @@ class Goose:
         print(styledText(textStyles["Red"] + errorMsg))
     pass
 
+  #-----------------------------------
+
+  def mkdir(self):
+    dirName = self.action.split(" ")[1]
+
+    try:
+      if self.env == envs["Local"]:
+        localDirPath = getNextPath(self.pathLocal, dirName)
+        os.mkdir(localDirPath)
+      else:
+        remoteDirPath = getNextPath(self.pathRemote, dirName)
+        self.ftp.mkd(remoteDirPath)
+    except:
+      msg = mkdirNS["error"].format(dirName=dirName)
+      errorMsg = styledText(textStyles["Red"] + msg)
+      print(errorMsg)
+
 
   #------------- Run -------------#
 
@@ -202,6 +221,8 @@ class Goose:
           self.whoAmI()
         elif isCd(self.action):
           self.cd()
+        elif isMkdir(self.action):
+          self.mkdir()
         else:
           print(styledText(textStyles["Yellow"] + commonNS["not_found"]))
       except:

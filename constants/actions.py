@@ -26,5 +26,6 @@ Actions = {
 
   "WhoAmI": "whoami",
 
-  "Cd": "cd"
+  "Cd": "cd",
+  "Mkdir": "dir"
 }
