@@ -1,5 +1,5 @@
 import os
 
-def getNextLocalPath(curPath, dest):
+def getNextPath(curPath, dest):
   path = os.path
   return path.abspath(path.join(curPath, dest))

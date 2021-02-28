@@ -17,7 +17,7 @@ from constants.textStyles import textStyles
 from constants.environments import environments as envs
 from constants.actions import Actions as Act
 from helpers.execCmd import execCmd
-from helpers.getNextLocalPath import getNextLocalPath
+from helpers.getNextPath import getNextPath
 
 commonNS = getNamespace(nsAccessors["Common"])
 helpNS = getNamespace(nsAccessors["Help"])
@@ -96,7 +96,7 @@ class Goose:
         output = execCmd(cmd)
         print(output)
       else:
-        print("LS ERROR!")
+        raise Exception("ls: Path not found")
     pass
 
   #-----------------------------------
@@ -149,7 +149,7 @@ class Goose:
     dest = self.action.split(" ")[1]
 
     if self.env == envs["Local"]:
-      nextLocalPath = getNextLocalPath(self.pathLocal, dest)
+      nextLocalPath = getNextPath(self.pathLocal, dest)
       if os.path.exists(nextLocalPath):
         os.chdir(nextLocalPath)
         self.pathLocal = nextLocalPath  
@@ -157,8 +157,14 @@ class Goose:
         errorMsg = cdNS["error"].format(dest=nextLocalPath)
         print(styledText(textStyles["Red"] + errorMsg))
     else:
-      self.ftp.cwd(dest)
-      self.pathRemote += dest
+      try:
+        nextRemotePath = getNextPath(self.pathRemote, dest)
+        self.ftp.cwd(nextRemotePath)
+        self.pathRemote = nextRemotePath 
+      except:
+        errorMsg = cdNS["error"].format(dest=nextRemotePath)
+        print(styledText(textStyles["Red"] + errorMsg))
+    pass
 
 
   #------------- Run -------------#
