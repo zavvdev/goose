@@ -3,4 +3,5 @@ nsAccessors = {
   "Help": "help",
   "Rush": "rush",
   "Jump": "jump",
+  "Cd": "cd",
 }

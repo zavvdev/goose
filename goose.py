@@ -1,3 +1,4 @@
+import os
 from ftplib import FTP
 from constants.textStyles import textStyles
 from helpers.ActionVerificators.isExit import isExit
@@ -8,6 +9,7 @@ from helpers.ActionVerificators.isJump import isJump
 from helpers.ActionVerificators.isClear import isClear
 from helpers.ActionVerificators.isWhereAmI import isWhereAmI
 from helpers.ActionVerificators.isWhoAmI import isWhoAmI
+from helpers.ActionVerificators.isCd import isCd
 from helpers.getNamespace import getNamespace
 from constants.nsAccessors import nsAccessors
 from helpers.styledText import styledText
@@ -15,11 +17,13 @@ from constants.textStyles import textStyles
 from constants.environments import environments as envs
 from constants.actions import Actions as Act
 from helpers.execCmd import execCmd
+from helpers.getNextLocalPath import getNextLocalPath
 
 commonNS = getNamespace(nsAccessors["Common"])
 helpNS = getNamespace(nsAccessors["Help"])
 rushNS = getNamespace(nsAccessors["Rush"])
 jumpNS = getNamespace(nsAccessors["Jump"])
+cdNS = getNamespace(nsAccessors["Cd"])
 
 class Goose:
   def __init__(self):
@@ -87,9 +91,12 @@ class Goose:
     if self.env == envs["Remote"]:
       self.ftp.retrlines("LIST")
     else:
-      cmd = "cd {path}; ls -al".format(path=self.pathLocal)
-      output = execCmd(cmd)
-      print(output)
+      if os.path.exists(self.pathLocal):
+        cmd = "cd {path}; ls -al".format(path=self.pathLocal)
+        output = execCmd(cmd)
+        print(output)
+      else:
+        print("LS ERROR!")
     pass
 
   #-----------------------------------
@@ -136,6 +143,23 @@ class Goose:
     except:
       pass
 
+  #-----------------------------------
+
+  def cd(self):
+    dest = self.action.split(" ")[1]
+
+    if self.env == envs["Local"]:
+      nextLocalPath = getNextLocalPath(self.pathLocal, dest)
+      if os.path.exists(nextLocalPath):
+        os.chdir(nextLocalPath)
+        self.pathLocal = nextLocalPath  
+      else:
+        errorMsg = cdNS["error"].format(dest=nextLocalPath)
+        print(styledText(textStyles["Red"] + errorMsg))
+    else:
+      self.ftp.cwd(dest)
+      self.pathRemote += dest
+
 
   #------------- Run -------------#
 
@@ -144,31 +168,37 @@ class Goose:
     print(styledText(textStyles["Bold"] + commonNS["app_name"]))
 
     while True:
-      isRemote = self.env == envs["Remote"]
-      env = commonNS["envs"]["remote"] if isRemote else commonNS["envs"]["local"]
-      style = textStyles["Cyan"] + textStyles["Bold"]
-      inputText = styledText(
-        style + commonNS["input"].format(env=env)
-      )
-      self.action = input(inputText)
+      try:
+        isRemote = self.env == envs["Remote"]
+        env = commonNS["envs"]["remote"] if isRemote else commonNS["envs"]["local"]
+        style = textStyles["Cyan"] + textStyles["Bold"]
+        inputText = styledText(
+          style + commonNS["input"].format(env=env)
+        )
+        self.action = input(inputText)
 
-      if isExit(self.action):
-        self.exit()
-        break
-      elif isClear(self.action):
-        self.clear()
-      elif isHelp(self.action):
-        self.help()
-      elif isRush(self.action):
-        self.rush()
-      elif isLs(self.action):
-        self.ls()
-      elif isJump(self.action):
-        self.jump()
-      elif isWhereAmI(self.action):
-        self.whereAmI()
-      elif isWhoAmI(self.action):
-        self.whoAmI()
-      else:
-        print(styledText(textStyles["Yellow"] + commonNS["not_found"]))
+        if isExit(self.action):
+          self.exit()
+          break
+        elif isClear(self.action):
+          self.clear()
+        elif isHelp(self.action):
+          self.help()
+        elif isRush(self.action):
+          self.rush()
+        elif isLs(self.action):
+          self.ls()
+        elif isJump(self.action):
+          self.jump()
+        elif isWhereAmI(self.action):
+          self.whereAmI()
+        elif isWhoAmI(self.action):
+          self.whoAmI()
+        elif isCd(self.action):
+          self.cd()
+        else:
+          print(styledText(textStyles["Yellow"] + commonNS["not_found"]))
+      except:
+        errorMsg = commonNS["unexpected_error"]
+        print(styledText(textStyles["Red"] + errorMsg))
     pass

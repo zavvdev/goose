@@ -24,5 +24,7 @@ Actions = {
   "WhereAmI": "whereami",
   "WhereAmIShort": "pwd",
 
-  "WhoAmI": "whoami"
+  "WhoAmI": "whoami",
+
+  "Cd": "cd"
 }
