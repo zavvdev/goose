@@ -1,12 +1,10 @@
 from constants.actions import Actions as Act
+from helpers.trimSpaces import trimSpaces
 
-def isRush(i):
-  s = i.split(" ")
-  if len(s) > 1:
-    rushHere = s[0] == Act["Rush"]["h"]
-    hAccessorHere = len(s) == 2
-    uAccessorHere = len(s) == 4 and s[2] == Act["Rush"]["u"]
-    pAccessorHere = len(s) == 6 and s[2] == Act["Rush"]["u"] and s[4] == Act["Rush"]["p"]
-    return rushHere and (hAccessorHere or uAccessorHere or pAccessorHere)
+def isRush(action):
+  trimmed = trimSpaces(action)
+  s = trimmed.split(" ")
+  if len(s) == 2:
+    return s[0] == Act["Rush"]
   return False
   pass

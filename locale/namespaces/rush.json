@@ -1,5 +1,9 @@
 {
   "connecting": "Rushing to {host}..",
   "connected": "Successfuly connected to {host}!",
-  "connecting_error": "Error"
+  "connecting_error": "Error",
+  "login": {
+    "u": "Username",
+    "p": "Password"
+  }
 }

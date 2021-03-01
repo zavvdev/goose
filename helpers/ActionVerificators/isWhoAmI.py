@@ -1,5 +1,7 @@
 from constants.actions import Actions as Act
+from helpers.trimSpaces import trimSpaces
 
-def isWhoAmI(i):
-  return i == Act["WhoAmI"]
+def isWhoAmI(action):
+  trimmed = trimSpaces(action)
+  return trimmed == Act["WhoAmI"]
   pass

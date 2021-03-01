@@ -5,11 +5,7 @@ Actions = {
   "Help": "help",
   "HelpShort": "h",
 
-  "Rush": {
-    "h": "rush",
-    "u": "as",
-    "p": "with",
-  },
+  "Rush": "rush",
 
   "Ls": "ls",
 

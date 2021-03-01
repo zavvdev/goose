@@ -26,6 +26,8 @@ from helpers.getErrorMsg import getErrorMsg
 from helpers.getSuccessMsg import getSuccessMsg
 from helpers.getInfoMsg import getInfoMsg
 from helpers.isFtpDir import isFtpDir
+from helpers.getUserInput import getUserInput
+from helpers.trimSpaces import trimSpaces
 
 commonNS = getNamespace(nsAccessors["Common"])
 helpNS = getNamespace(nsAccessors["Help"])
@@ -53,6 +55,7 @@ class Goose:
     d = self.loginData
     try:
       self.ftp = FTP(d["h"], d["u"], d["p"])
+      self.ftp.login()
       self.connected = True
       self.env = envs["Remote"]
       self.pathRemote = self.ftp.pwd()
@@ -116,19 +119,19 @@ class Goose:
 
 
   def rush(self):
-    i = self.action
-    s = i.split(" ")
-    l = len(s)
+    trimmedAct = trimSpaces(self.action)
+    hostStr = trimmedAct.split(" ")[1]
+    loginStr = rushNS["login"]["u"]
+    passwdStr = rushNS["login"]["p"]
+    userInput = getUserInput([loginStr, passwdStr])
+    self.loginData = {
+      "h": hostStr,
+      "u": userInput[loginStr],
+      "p": userInput[passwdStr]
+    }
 
-    msg = rushNS["connecting"].format(host=s[1])
+    msg = rushNS["connecting"].format(host=self.loginData["h"])
     print(styledText(textStyles["Violet"] + msg))
-
-    if l == 2:
-      self.loginData = { "h": s[1], "u": "", "p": ""}
-    elif l == 4:
-      self.loginData = { "h": s[1], "u": s[3], "p": "" }
-    else:
-      self.loginData = { "h": s[1], "u": s[3], "p": s[5] }
 
     if self.login():
       msg = rushNS["connected"].format(host=self.loginData["h"])
