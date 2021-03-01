@@ -55,7 +55,7 @@ class Goose:
     d = self.loginData
     try:
       self.ftp = FTP(d["h"], d["u"], d["p"])
-      self.ftp.login()
+      self.ftp.login(user=d["u"], passwd=d["p"])
       self.connected = True
       self.env = envs["Remote"]
       self.pathRemote = self.ftp.pwd()
