@@ -155,15 +155,17 @@ class Goose:
 
 
   def jump(self):
-    jumpTo = self.action.split(" ")[1]
+    trimmed = trimSpaces(self.action)
+    jumpTo = trimmed.split(" ")[1]
 
-    if jumpTo == Act["Jump"]["local"]:
+    if jumpTo == envs["Local"]:
       self.env = envs["Local"]
     else:
       if self.connected:
         self.env = envs["Remote"]
       else:
         print(getErrorMsg(jumpNS["not_connected"]))
+        
     pass
 
 

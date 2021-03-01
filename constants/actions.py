@@ -9,11 +9,7 @@ Actions = {
 
   "Ls": "ls",
 
-  "Jump": {
-    "act": "jump",
-    "local": "local",
-    "remote": "remote"
-  },
+  "Jump": "jump",
 
   "Clear": "clear",
 
