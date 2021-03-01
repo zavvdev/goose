@@ -25,6 +25,7 @@ from helpers.getUserConfirm import getUserConfirm
 from helpers.getErrorMsg import getErrorMsg
 from helpers.getSuccessMsg import getSuccessMsg
 from helpers.getInfoMsg import getInfoMsg
+from helpers.isFtpDir import isFtpDir
 
 commonNS = getNamespace(nsAccessors["Common"])
 helpNS = getNamespace(nsAccessors["Help"])
@@ -61,6 +62,51 @@ class Goose:
     pass
 
 
+  def rmFtpTree(self, path):
+    pathList = self.ftp.list(path, extra=True)
+    for target in pathList:
+      preparedTargetPath = getNextPath(path, target["name"])
+      if target["directory"] == "d":
+        self.rmFtpTree(preparedTargetPath)
+      else:
+        self.ftp.delete(preparedTargetPath)
+    self.ftp.rmd(path)
+    pass
+
+  
+  def deleteLocal(self, target):
+    localTargetPath = getNextPath(self.pathLocal, target)
+    if os.path.isfile(localTargetPath):
+      confirmMsg = deleteNS["delete_file"].format(fileName=target)
+      confirmDelFile = getUserConfirm(confirmMsg)
+      if confirmDelFile:
+        os.remove(localTargetPath)
+    elif os.path.isdir(localTargetPath):
+      confirmMsg = deleteNS["delete_dir"].format(dirName=target)
+      confirmDelDir = getUserConfirm(confirmMsg)
+      if confirmDelDir:
+        shutil.rmtree(localTargetPath)
+    else:
+      print(getErrorMsg(deleteNS["error"].format(target=target)))
+    pass
+
+
+  def deleteRemote(self, target):
+    remoteTargetPath = getNextPath(self.pathRemote, target)
+    currentRemoteDirList = self.ftp.list(self.pathRemote, extra=True)
+    if isFtpDir(remoteTargetPath, currentRemoteDirList):
+      confirmMsg = deleteNS["delete_dir"].format(dirName=target)
+      confirmDelDir = getUserConfirm(confirmMsg)
+      if confirmDelDir:
+        self.rmFtpTree(remoteTargetPath)
+    else:
+      confirmMsg = deleteNS["delete_file"].format(fileName=target)
+      confirmDelFile = getUserConfirm(confirmMsg)
+      if confirmDelFile:
+        self.ftp.delete(remoteTargetPath)
+    pass
+
+
   #------------- Actions -------------#
 
 
@@ -68,7 +114,6 @@ class Goose:
     print(helpNS["help"])
     pass
 
-  #-----------------------------------
 
   def rush(self):
     i = self.action
@@ -92,7 +137,6 @@ class Goose:
       print(getErrorMsg(rushNS["connecting_error"]))
     pass
 
-  #-----------------------------------
 
   def ls(self):
     if self.env == envs["Remote"]:
@@ -106,7 +150,6 @@ class Goose:
         raise Exception("ls: Path not found")
     pass
 
-  #-----------------------------------
 
   def jump(self):
     jumpTo = self.action.split(" ")[1]
@@ -120,29 +163,27 @@ class Goose:
         print(getErrorMsg(jumpNS["not_connected"]))
     pass
 
-  #-----------------------------------
 
   def clear(self):
     print(execCmd("clear"))
     pass
 
-  #-----------------------------------
 
   def whereAmI(self):
     if self.env == envs["Local"]:
       print(self.pathLocal)
     else:
       print(self.pathRemote)
+    pass
 
-  #-----------------------------------
 
   def whoAmI(self):
     if self.env == envs["Local"]:
       print(execCmd("whoami"))
     else:
       print(self.loginData["u"])
+    pass
 
-  #-----------------------------------
 
   def exit(self):
     try:
@@ -150,7 +191,6 @@ class Goose:
     except:
       pass
 
-  #-----------------------------------
 
   def cd(self):
     dest = self.action.split(" ")[1]
@@ -169,9 +209,9 @@ class Goose:
         self.pathRemote = nextRemotePath 
       except:
         print(getErrorMsg(cdNS["error"].format(dest=nextRemotePath)))
+
     pass
 
-  #-----------------------------------
 
   def mkdir(self):
     dirName = self.action.split(" ")[1]
@@ -188,36 +228,20 @@ class Goose:
 
     pass
 
-  #-----------------------------------
 
   def delete(self):
     target = self.action.split(" ")[1]
 
     try:
       if self.env == envs["Local"]:
-        localTargetPath = getNextPath(self.pathLocal, target)
-        if os.path.isfile(localTargetPath):
-          confirmMsg = deleteNS["delete_file"].format(fileName=target)
-          confirmDelFile = getUserConfirm(confirmMsg)
-          if confirmDelFile:
-            os.remove(localTargetPath)
-        elif os.path.isdir(localTargetPath):
-          confirmMsg = deleteNS["delete_dir"].format(dirName=target)
-          confirmDelDir = getUserConfirm(confirmMsg)
-          if confirmDelDir:
-            shutil.rmtree(localTargetPath)
-        else:
-          print(getErrorMsg(deleteNS["error"].format(target=target)))
+        self.deleteLocal(target)
       else:
-        remoteTargetPath = getNextPath(self.pathRemote, target)
-        confirmMsg = deleteNS["delete_dir"].format(dirName=target)
-        confirmDelDir = getUserConfirm(confirmMsg)
-        if confirmDelDir:
-          self.ftp.rmd(remoteTargetPath)
+        self.deleteRemote(target)
     except:
       print(getErrorMsg(deleteNS["error"].format(target=target)))
             
     pass
+
 
   #------------- Run -------------#
 
