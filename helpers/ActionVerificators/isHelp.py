@@ -1,5 +1,7 @@
 from constants.actions import Actions as Act
+from helpers.trimSpaces import trimSpaces
 
-def isHelp(i):
-  return i == Act["Help"] or i == Act["HelpShort"]
+def isHelp(action):
+  trimmed = trimSpaces(action)
+  return trimmed == Act["Help"] or trimmed == Act["HelpShort"]
   pass

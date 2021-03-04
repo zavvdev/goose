@@ -28,6 +28,7 @@ from helpers.getInfoMsg import getInfoMsg
 from helpers.isFtpDir import isFtpDir
 from helpers.getUserInput import getUserInput
 from helpers.trimSpaces import trimSpaces
+from helpers.getSingleActionParam import getSingleActionParam
 
 commonNS = getNamespace(nsAccessors["Common"])
 helpNS = getNamespace(nsAccessors["Help"])
@@ -36,6 +37,7 @@ jumpNS = getNamespace(nsAccessors["Jump"])
 cdNS = getNamespace(nsAccessors["Cd"])
 mkdirNS = getNamespace(nsAccessors["Mkdir"])
 deleteNS = getNamespace(nsAccessors["Delete"])
+
 
 class Goose:
   def __init__(self):
@@ -96,8 +98,7 @@ class Goose:
 
   def deleteRemote(self, target):
     remoteTargetPath = getNextPath(self.pathRemote, target)
-    currentRemoteDirList = self.ftp.list(self.pathRemote, extra=True)
-    if isFtpDir(remoteTargetPath, currentRemoteDirList):
+    if isFtpDir(remoteTargetPath, self.ftp):
       confirmMsg = deleteNS["delete_dir"].format(dirName=target)
       confirmDelDir = getUserConfirm(confirmMsg)
       if confirmDelDir:
@@ -113,14 +114,96 @@ class Goose:
   #------------- Actions -------------#
 
 
+  def cd(self):
+    dest = getSingleActionParam(Act["Cd"], self.action)
+    if self.env == envs["Local"]:
+      nextLocalPath = getNextPath(self.pathLocal, dest)
+      if os.path.exists(nextLocalPath):
+        os.chdir(nextLocalPath)
+        self.pathLocal = nextLocalPath  
+      else:
+        print(getErrorMsg(cdNS["error"].format(dest=nextLocalPath)))
+    else:
+      try:
+        nextRemotePath = getNextPath(self.pathRemote, dest)
+        self.ftp.cwd(nextRemotePath)
+        self.pathRemote = nextRemotePath 
+      except:
+        print(getErrorMsg(cdNS["error"].format(dest=nextRemotePath)))
+    pass
+
+
+  def clear(self):
+    print(execCmd("clear"))
+    pass
+
+
+  def delete(self):
+    target = getSingleActionParam(Act["Delete"], self.action)
+    try:
+      if self.env == envs["Local"]:
+        self.deleteLocal(target)
+      else:
+        self.deleteRemote(target)
+    except:
+      print(getErrorMsg(deleteNS["error"].format(target=target)))     
+    pass
+
+
+  def exit(self):
+    try:
+      self.ftp.quit()
+    except:
+      pass
+
+
   def help(self):
     print(helpNS["help"])
     pass
 
 
+  def jump(self):
+    jumpTo = getSingleActionParam(Act["Jump"], self.action)
+    if jumpTo == envs["Local"]:
+      self.env = envs["Local"]
+    else:
+      if self.connected:
+        self.env = envs["Remote"]
+      else:
+        print(getErrorMsg(jumpNS["not_connected"])) 
+    pass
+
+
+  def ls(self):
+    if self.env == envs["Remote"] and self.connected:
+      self.ftp.retrlines("LIST")
+    else:
+      if os.path.exists(self.pathLocal):
+        os.chdir(self.pathLocal)
+        cmd = "ls -al"
+        output = execCmd(cmd)
+        print(output)
+      else:
+        raise Exception("ls: Path not found")
+    pass
+
+
+  def mkdir(self):
+    dirName = getSingleActionParam(Act["Mkdir"], self.action)
+    try:
+      if self.env == envs["Local"]:
+        localDirPath = getNextPath(self.pathLocal, dirName)
+        os.mkdir(localDirPath)
+      else:
+        remoteDirPath = getNextPath(self.pathRemote, dirName)
+        self.ftp.mkd(remoteDirPath)
+    except:
+      print(getErrorMsg(mkdirNS["error"].format(dirName=dirName)))
+    pass
+
+
   def rush(self):
-    trimmedAct = trimSpaces(self.action)
-    hostStr = trimmedAct.split(" ")[1]
+    hostStr = getSingleActionParam(Act["Rush"], self.action)
     loginStr = rushNS["login"]["u"]
     passwdStr = rushNS["login"]["p"]
     userInput = getUserInput([loginStr, passwdStr])
@@ -129,48 +212,13 @@ class Goose:
       "u": userInput[loginStr],
       "p": userInput[passwdStr]
     }
-
     msg = rushNS["connecting"].format(host=self.loginData["h"])
     print(styledText(textStyles["Violet"] + msg))
-
     if self.login():
       msg = rushNS["connected"].format(host=self.loginData["h"])
       print(getSuccessMsg(msg))
     else:
       print(getErrorMsg(rushNS["connecting_error"]))
-    pass
-
-
-  def ls(self):
-    if self.env == envs["Remote"]:
-      self.ftp.retrlines("LIST")
-    else:
-      if os.path.exists(self.pathLocal):
-        cmd = "cd {path}; ls -al".format(path=self.pathLocal)
-        output = execCmd(cmd)
-        print(output)
-      else:
-        raise Exception("ls: Path not found")
-    pass
-
-
-  def jump(self):
-    trimmed = trimSpaces(self.action)
-    jumpTo = trimmed.split(" ")[1]
-
-    if jumpTo == envs["Local"]:
-      self.env = envs["Local"]
-    else:
-      if self.connected:
-        self.env = envs["Remote"]
-      else:
-        print(getErrorMsg(jumpNS["not_connected"]))
-        
-    pass
-
-
-  def clear(self):
-    print(execCmd("clear"))
     pass
 
 
@@ -190,70 +238,11 @@ class Goose:
     pass
 
 
-  def exit(self):
-    try:
-      self.ftp.quit()
-    except:
-      pass
-
-
-  def cd(self):
-    dest = self.action.split(" ")[1]
-
-    if self.env == envs["Local"]:
-      nextLocalPath = getNextPath(self.pathLocal, dest)
-      if os.path.exists(nextLocalPath):
-        os.chdir(nextLocalPath)
-        self.pathLocal = nextLocalPath  
-      else:
-        print(getErrorMsg(cdNS["error"].format(dest=nextLocalPath)))
-    else:
-      try:
-        nextRemotePath = getNextPath(self.pathRemote, dest)
-        self.ftp.cwd(nextRemotePath)
-        self.pathRemote = nextRemotePath 
-      except:
-        print(getErrorMsg(cdNS["error"].format(dest=nextRemotePath)))
-
-    pass
-
-
-  def mkdir(self):
-    dirName = self.action.split(" ")[1]
-
-    try:
-      if self.env == envs["Local"]:
-        localDirPath = getNextPath(self.pathLocal, dirName)
-        os.mkdir(localDirPath)
-      else:
-        remoteDirPath = getNextPath(self.pathRemote, dirName)
-        self.ftp.mkd(remoteDirPath)
-    except:
-      print(getErrorMsg(mkdirNS["error"].format(dirName=dirName)))
-
-    pass
-
-
-  def delete(self):
-    target = self.action.split(" ")[1]
-
-    try:
-      if self.env == envs["Local"]:
-        self.deleteLocal(target)
-      else:
-        self.deleteRemote(target)
-    except:
-      print(getErrorMsg(deleteNS["error"].format(target=target)))
-            
-    pass
-
-
   #------------- Run -------------#
 
 
   def run(self):
     print(styledText(textStyles["Bold"] + commonNS["app_name"]))
-
     while True:
       try:
         isRemote = self.env == envs["Remote"]
