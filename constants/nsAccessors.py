@@ -6,4 +6,5 @@ nsAccessors = {
   "Cd": "cd",
   "Mkdir": "mkdir",
   "Delete": "delete",
+  "Drop": "drop",
 }

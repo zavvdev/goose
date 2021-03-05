@@ -13,6 +13,7 @@ from helpers.ActionVerificators.isWhoAmI import isWhoAmI
 from helpers.ActionVerificators.isCd import isCd
 from helpers.ActionVerificators.isMkdir import isMkdir
 from helpers.ActionVerificators.isDelete import isDelete
+from helpers.ActionVerificators.isDrop import isDrop
 from helpers.getNamespace import getNamespace
 from constants.nsAccessors import nsAccessors
 from helpers.styledText import styledText
@@ -25,6 +26,7 @@ from helpers.getUserConfirm import getUserConfirm
 from helpers.getErrorMsg import getErrorMsg
 from helpers.getSuccessMsg import getSuccessMsg
 from helpers.getInfoMsg import getInfoMsg
+from helpers.getSuspendMsg import getSuspendMsg
 from helpers.isFtpDir import isFtpDir
 from helpers.getUserInput import getUserInput
 from helpers.trimSpaces import trimSpaces
@@ -37,6 +39,7 @@ jumpNS = getNamespace(nsAccessors["Jump"])
 cdNS = getNamespace(nsAccessors["Cd"])
 mkdirNS = getNamespace(nsAccessors["Mkdir"])
 deleteNS = getNamespace(nsAccessors["Delete"])
+dropNS = getNamespace(nsAccessors["Drop"])
 
 
 class Goose:
@@ -111,6 +114,20 @@ class Goose:
     pass
 
 
+  def uploadFile(self, targetPath, remotePath):
+    _, fileName = os.path.split(targetPath)
+    remoteFilePath = getNextPath(remotePath, fileName)
+    self.ftp.put(targetPath, remoteFilePath)
+    pass
+
+
+  def uploadTree(self, targetPath, remotePath):
+    _, dirName = os.path.split(targetPath)
+    remoteDirPath = getNextPath(remotePath, dirName)
+    self.ftp.upload_tree(targetPath, remoteDirPath)
+    pass
+
+
   #------------- Actions -------------#
 
 
@@ -147,6 +164,35 @@ class Goose:
         self.deleteRemote(target)
     except:
       print(getErrorMsg(deleteNS["error"].format(target=target)))     
+    pass
+
+
+  def drop(self):
+    if self.connected:
+      target = getSingleActionParam(Act["Drop"], self.action)
+      targetPath = getNextPath(self.pathLocal, target)
+      if os.path.exists(targetPath):
+        placeToTxt = dropNS["remote_path"]
+        remPathUserInput = getUserInput([placeToTxt])[placeToTxt]
+        where = getNextPath(self.pathRemote, remPathUserInput)
+        try:
+          print(getSuspendMsg(dropNS["progress"]))
+          if os.path.isfile(targetPath):
+            self.uploadFile(targetPath, where)
+          elif os.path.isdir(targetPath):
+            self.uploadTree(targetPath, where)
+          else:
+            raise Exception("Unable to define local path")
+          print(getSuccessMsg(dropNS["success"]))
+        except:
+          errorMsg = getErrorMsg(dropNS["transfer_error"])
+          print(errorMsg)
+      else:
+        errorMsg = getErrorMsg(dropNS["invalid_path"])
+        print(errorMsg)
+    else:
+      errorMsg = getErrorMsg(dropNS["not_connected"])
+      print(errorMsg)
     pass
 
 
@@ -212,8 +258,8 @@ class Goose:
       "u": userInput[loginStr],
       "p": userInput[passwdStr]
     }
-    msg = rushNS["connecting"].format(host=self.loginData["h"])
-    print(styledText(textStyles["Violet"] + msg))
+    msg = getSuspendMsg(rushNS["connecting"].format(host=self.loginData["h"]))
+    print(msg)
     if self.login():
       msg = rushNS["connected"].format(host=self.loginData["h"])
       print(getSuccessMsg(msg))
@@ -276,6 +322,8 @@ class Goose:
           self.mkdir()
         elif isDelete(self.action):
           self.delete()
+        elif isDrop(self.action):
+          self.drop()
         else:
           print(getInfoMsg(commonNS["not_found"]))
       except:

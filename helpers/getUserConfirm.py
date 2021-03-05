@@ -12,10 +12,8 @@ def getUserConfirm(question):
   yesShortAct = Act["Confirm"]["YesShort"]
   confTip = commonNS["confirm"]["tip"]
   conf = input(styledText(textStyles["Yellow"] + q + confTip))
-
   if conf.lower() == yesAct or conf.lower() == yesShortAct:
     return True
   else:
     return False
-
   pass
