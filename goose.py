@@ -114,17 +114,15 @@ class Goose:
     pass
 
 
-  def uploadFile(self, targetPath, remotePath):
-    _, fileName = os.path.split(targetPath)
-    remoteFilePath = getNextPath(remotePath, fileName)
-    self.ftp.put(targetPath, remoteFilePath)
+  def uploadFile(self, targetPath):
+    self.ftp.put(targetPath, "/")
     pass
 
 
-  def uploadTree(self, targetPath, remotePath):
+  def uploadTree(self, targetPath):
     _, dirName = os.path.split(targetPath)
-    remoteDirPath = getNextPath(remotePath, dirName)
-    self.ftp.upload_tree(targetPath, remoteDirPath)
+    remoteDirName = getNextPath("/", dirName)
+    self.ftp.upload_tree(targetPath, remoteDirName)
     pass
 
 
@@ -172,15 +170,12 @@ class Goose:
       target = getSingleActionParam(Act["Drop"], self.action)
       targetPath = getNextPath(self.pathLocal, target)
       if os.path.exists(targetPath):
-        placeToTxt = dropNS["remote_path"]
-        remPathUserInput = getUserInput([placeToTxt])[placeToTxt]
-        where = getNextPath(self.pathRemote, remPathUserInput)
         try:
           print(getSuspendMsg(dropNS["progress"]))
           if os.path.isfile(targetPath):
-            self.uploadFile(targetPath, where)
+            self.uploadFile(targetPath)
           elif os.path.isdir(targetPath):
-            self.uploadTree(targetPath, where)
+            self.uploadTree(targetPath)
           else:
             raise Exception("Unable to define local path")
           print(getSuccessMsg(dropNS["success"]))
@@ -254,9 +249,9 @@ class Goose:
     passwdStr = rushNS["login"]["p"]
     userInput = getUserInput([loginStr, passwdStr])
     self.loginData = {
-      "h": hostStr,
-      "u": userInput[loginStr],
-      "p": userInput[passwdStr]
+      "h": "192.168.0.105", #hostStr,
+      "u": "ubuntu-ftp", #userInput[loginStr],
+      "p": "123", #userInput[passwdStr]
     }
     msg = getSuspendMsg(rushNS["connecting"].format(host=self.loginData["h"]))
     print(msg)
