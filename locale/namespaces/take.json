@@ -1,0 +1,6 @@
+{
+  "not_connected": "Cannon take files since you are not connected to anyone ftp server.",
+  "progress": "Downloading files from server. Wait a bit..",
+  "success": "Success! Its all here!",
+  "transfer_error": "An error occured during the transfer."
+}

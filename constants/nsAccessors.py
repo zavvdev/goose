@@ -7,4 +7,5 @@ nsAccessors = {
   "Mkdir": "mkdir",
   "Delete": "delete",
   "Drop": "drop",
+  "Take": "take",
 }

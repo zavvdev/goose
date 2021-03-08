@@ -14,6 +14,7 @@ from helpers.ActionVerificators.isCd import isCd
 from helpers.ActionVerificators.isMkdir import isMkdir
 from helpers.ActionVerificators.isDelete import isDelete
 from helpers.ActionVerificators.isDrop import isDrop
+from helpers.ActionVerificators.isTake import isTake
 from helpers.getNamespace import getNamespace
 from constants.nsAccessors import nsAccessors
 from helpers.styledText import styledText
@@ -40,6 +41,7 @@ cdNS = getNamespace(nsAccessors["Cd"])
 mkdirNS = getNamespace(nsAccessors["Mkdir"])
 deleteNS = getNamespace(nsAccessors["Delete"])
 dropNS = getNamespace(nsAccessors["Drop"])
+takeNS = getNamespace(nsAccessors["Take"])
 
 
 class Goose:
@@ -67,6 +69,12 @@ class Goose:
       return True
     except:
       return False
+    pass
+
+
+  def changeLocalPath(self, nextPath):
+    os.chdir(nextPath)
+    self.pathLocal = nextPath
     pass
 
 
@@ -126,6 +134,31 @@ class Goose:
     pass
 
 
+  def downloadFile(self, targetPath):
+    _, fileName = os.path.split(targetPath)
+    localFileName = getNextPath(self.pathLocal, fileName)
+    self.ftp.get(targetPath, localFileName)
+    pass
+
+  
+  def downloadTree(self, targetPath):
+    print("target: " + targetPath)
+    _, dirName = os.path.split(targetPath)
+    localDirPath = getNextPath(self.pathLocal, dirName)
+    os.mkdir(localDirPath)
+    self.changeLocalPath(localDirPath)
+    targetList = self.ftp.list(targetPath, extra=True)
+    for el in targetList:
+      elPath = getNextPath(targetPath, el["name"])
+      if el["directory"] == "d":
+        self.downloadTree(elPath)
+      else:
+        localFileName = getNextPath(self.pathLocal, el["name"])
+        print("file: " + elPath + ", " + localFileName)
+        self.ftp.get(elPath, localFileName)   
+    pass
+
+
   #------------- Actions -------------#
 
 
@@ -134,8 +167,7 @@ class Goose:
     if self.env == envs["Local"]:
       nextLocalPath = getNextPath(self.pathLocal, dest)
       if os.path.exists(nextLocalPath):
-        os.chdir(nextLocalPath)
-        self.pathLocal = nextLocalPath  
+        self.changeLocalPath(nextLocalPath)  
       else:
         print(getErrorMsg(cdNS["error"].format(dest=nextLocalPath)))
     else:
@@ -221,7 +253,7 @@ class Goose:
     else:
       if os.path.exists(self.pathLocal):
         os.chdir(self.pathLocal)
-        cmd = "ls -al"
+        cmd = "ls -l"
         output = execCmd(cmd)
         print(output)
       else:
@@ -263,6 +295,28 @@ class Goose:
     pass
 
 
+  def take(self):
+    if self.connected:
+      target = getSingleActionParam(Act["Take"], self.action)
+      targetPath = getNextPath(self.pathRemote, target)
+      # try:
+      print(getSuspendMsg(takeNS["progress"]))
+      if isFtpDir(targetPath, self.ftp):
+        currentLocalPath = self.pathLocal
+        self.downloadTree(targetPath)
+        self.changeLocalPath(currentLocalPath)
+      else:
+        self.downloadFile(targetPath)
+      print(getSuccessMsg(takeNS["success"]))
+      # except:
+      #   errorMsg = getErrorMsg(takeNS["transfer_error"])
+      #   print(errorMsg)
+    else:
+      errorMsg = getErrorMsg(dropNS["not_connected"])
+      print(errorMsg)
+    pass
+
+
   def whereAmI(self):
     if self.env == envs["Local"]:
       print(self.pathLocal)
@@ -285,42 +339,43 @@ class Goose:
   def run(self):
     print(styledText(textStyles["Bold"] + commonNS["app_name"]))
     while True:
-      try:
-        isRemote = self.env == envs["Remote"]
-        env = commonNS["envs"]["remote"] if isRemote else commonNS["envs"]["local"]
-        style = textStyles["Cyan"] + textStyles["Bold"]
-        inputText = styledText(
-          style + commonNS["input"].format(env=env)
-        )
-        self.action = input(inputText)
-
-        if isExit(self.action):
-          self.exit()
-          break
-        elif isClear(self.action):
-          self.clear()
-        elif isHelp(self.action):
-          self.help()
-        elif isRush(self.action):
-          self.rush()
-        elif isLs(self.action):
-          self.ls()
-        elif isJump(self.action):
-          self.jump()
-        elif isWhereAmI(self.action):
-          self.whereAmI()
-        elif isWhoAmI(self.action):
-          self.whoAmI()
-        elif isCd(self.action):
-          self.cd()
-        elif isMkdir(self.action):
-          self.mkdir()
-        elif isDelete(self.action):
-          self.delete()
-        elif isDrop(self.action):
-          self.drop()
-        else:
-          print(getInfoMsg(commonNS["not_found"]))
-      except:
-        print(getErrorMsg(commonNS["unexpected_error"]))
+      # try:
+      isRemote = self.env == envs["Remote"]
+      env = commonNS["envs"]["remote"] if isRemote else commonNS["envs"]["local"]
+      style = textStyles["Cyan"] + textStyles["Bold"]
+      inputText = styledText(
+        style + commonNS["input"].format(env=env)
+      )
+      self.action = input(inputText)
+      if isExit(self.action):
+        self.exit()
+        break
+      elif isClear(self.action):
+        self.clear()
+      elif isHelp(self.action):
+        self.help()
+      elif isRush(self.action):
+        self.rush()
+      elif isLs(self.action):
+        self.ls()
+      elif isJump(self.action):
+        self.jump()
+      elif isWhereAmI(self.action):
+        self.whereAmI()
+      elif isWhoAmI(self.action):
+        self.whoAmI()
+      elif isCd(self.action):
+        self.cd()
+      elif isMkdir(self.action):
+        self.mkdir()
+      elif isDelete(self.action):
+        self.delete()
+      elif isDrop(self.action):
+        self.drop()
+      elif isTake(self.action):
+        self.take()
+      else:
+        print(getInfoMsg(commonNS["not_found"]))
+      # except:
+      #   print(getErrorMsg(commonNS["unexpected_error"]))
     pass

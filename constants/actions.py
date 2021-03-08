@@ -14,6 +14,7 @@ Actions = {
   "Mkdir": "dir",
   "Delete": "del",
   "Drop": "drop",
+  "Take": "take",
   "Confirm": {
     "Yes": "yes",
     "No": "no",
