@@ -32,6 +32,7 @@ from helpers.isFtpDir import isFtpDir
 from helpers.getUserInput import getUserInput
 from helpers.trimSpaces import trimSpaces
 from helpers.getSingleActionParam import getSingleActionParam
+from helpers.getTimestamp import getTimestamp
 
 commonNS = getNamespace(nsAccessors["Common"])
 helpNS = getNamespace(nsAccessors["Help"])
@@ -51,7 +52,7 @@ class Goose:
     self.loginData = {}
     self.action = ""
     self.env = envs["Local"]
-    self.pathLocal = "/"
+    self.pathLocal = "/home/zavdev/Desktop/FTP/from server"
     self.pathRemote = ""
 
 
@@ -73,8 +74,9 @@ class Goose:
 
 
   def changeLocalPath(self, nextPath):
-    os.chdir(nextPath)
-    self.pathLocal = nextPath
+    preparedNextPath = getNextPath(self.pathLocal, nextPath)
+    os.chdir(preparedNextPath)
+    self.pathLocal = preparedNextPath
     pass
 
 
@@ -134,28 +136,40 @@ class Goose:
     pass
 
 
-  def downloadFile(self, targetPath):
+  def downloadFile(self, targetPath, pathExists, override):
     _, fileName = os.path.split(targetPath)
-    localFileName = getNextPath(self.pathLocal, fileName)
+    fileNameToCreate = fileName
+    if not override and pathExists:
+      timestamp = getTimestamp()
+      fileNameToCreate = "{time}_{file}".format(time=timestamp, file=fileName)
+    localFileName = getNextPath(self.pathLocal, fileNameToCreate)
     self.ftp.get(targetPath, localFileName)
     pass
 
-  
-  def downloadTree(self, targetPath):
-    print("target: " + targetPath)
+
+  def downloadTree(self, targetPath, pathExists, override):
     _, dirName = os.path.split(targetPath)
-    localDirPath = getNextPath(self.pathLocal, dirName)
-    os.mkdir(localDirPath)
+    dirNameToCreate = dirName
+    if not override and pathExists:
+      timestamp = getTimestamp()
+      dirNameToCreate = "{time}_{dir}".format(time=timestamp, dir=dirName)
+    localDirPath = getNextPath(self.pathLocal, dirNameToCreate)
+    if not pathExists or (pathExists and not override):
+      os.mkdir(localDirPath)
     self.changeLocalPath(localDirPath)
     targetList = self.ftp.list(targetPath, extra=True)
     for el in targetList:
       elPath = getNextPath(targetPath, el["name"])
+      localElPath = getNextPath(self.pathLocal, el["name"])
       if el["directory"] == "d":
-        self.downloadTree(elPath)
+        innerExists = False
+        if os.path.exists(localElPath):
+          innerExists = True
+        self.downloadTree(elPath, innerExists, True)
       else:
         localFileName = getNextPath(self.pathLocal, el["name"])
-        print("file: " + elPath + ", " + localFileName)
-        self.ftp.get(elPath, localFileName)   
+        self.ftp.get(elPath, localFileName)  
+    self.changeLocalPath("..")
     pass
 
 
@@ -297,20 +311,31 @@ class Goose:
 
   def take(self):
     if self.connected:
+      override = False
+      pathExists = False
       target = getSingleActionParam(Act["Take"], self.action)
       targetPath = getNextPath(self.pathRemote, target)
-      # try:
-      print(getSuspendMsg(takeNS["progress"]))
-      if isFtpDir(targetPath, self.ftp):
-        currentLocalPath = self.pathLocal
-        self.downloadTree(targetPath)
-        self.changeLocalPath(currentLocalPath)
-      else:
-        self.downloadFile(targetPath)
-      print(getSuccessMsg(takeNS["success"]))
-      # except:
-      #   errorMsg = getErrorMsg(takeNS["transfer_error"])
-      #   print(errorMsg)
+      _, targetName = os.path.split(targetPath)
+      localTargetPath = getNextPath(self.pathLocal, targetName)
+      if os.path.exists(localTargetPath):
+        pathExists = True
+        existsMsg = takeNS["exists"].format(target=target)
+        confOverrideMsg = getInfoMsg(existsMsg)
+        confirmOverride = getUserConfirm(confOverrideMsg)
+        if confirmOverride:
+          override = True
+      try:
+        print(getSuspendMsg(takeNS["progress"]))
+        if isFtpDir(targetPath, self.ftp):
+          currentLocalPath = self.pathLocal
+          self.downloadTree(targetPath, pathExists, override)
+          self.changeLocalPath(currentLocalPath)
+        else:
+          self.downloadFile(targetPath, pathExists, override)
+        print(getSuccessMsg(takeNS["success"]))
+      except:
+        errorMsg = getErrorMsg(takeNS["transfer_error"])
+        print(errorMsg)
     else:
       errorMsg = getErrorMsg(dropNS["not_connected"])
       print(errorMsg)
@@ -339,43 +364,43 @@ class Goose:
   def run(self):
     print(styledText(textStyles["Bold"] + commonNS["app_name"]))
     while True:
-      # try:
-      isRemote = self.env == envs["Remote"]
-      env = commonNS["envs"]["remote"] if isRemote else commonNS["envs"]["local"]
-      style = textStyles["Cyan"] + textStyles["Bold"]
-      inputText = styledText(
-        style + commonNS["input"].format(env=env)
-      )
-      self.action = input(inputText)
-      if isExit(self.action):
-        self.exit()
-        break
-      elif isClear(self.action):
-        self.clear()
-      elif isHelp(self.action):
-        self.help()
-      elif isRush(self.action):
-        self.rush()
-      elif isLs(self.action):
-        self.ls()
-      elif isJump(self.action):
-        self.jump()
-      elif isWhereAmI(self.action):
-        self.whereAmI()
-      elif isWhoAmI(self.action):
-        self.whoAmI()
-      elif isCd(self.action):
-        self.cd()
-      elif isMkdir(self.action):
-        self.mkdir()
-      elif isDelete(self.action):
-        self.delete()
-      elif isDrop(self.action):
-        self.drop()
-      elif isTake(self.action):
-        self.take()
-      else:
-        print(getInfoMsg(commonNS["not_found"]))
-      # except:
-      #   print(getErrorMsg(commonNS["unexpected_error"]))
+      try:
+        isRemote = self.env == envs["Remote"]
+        env = commonNS["envs"]["remote"] if isRemote else commonNS["envs"]["local"]
+        style = textStyles["Cyan"] + textStyles["Bold"]
+        inputText = styledText(
+          style + commonNS["input"].format(env=env)
+        )
+        self.action = input(inputText)
+        if isExit(self.action):
+          self.exit()
+          break
+        elif isClear(self.action):
+          self.clear()
+        elif isHelp(self.action):
+          self.help()
+        elif isRush(self.action):
+          self.rush()
+        elif isLs(self.action):
+          self.ls()
+        elif isJump(self.action):
+          self.jump()
+        elif isWhereAmI(self.action):
+          self.whereAmI()
+        elif isWhoAmI(self.action):
+          self.whoAmI()
+        elif isCd(self.action):
+          self.cd()
+        elif isMkdir(self.action):
+          self.mkdir()
+        elif isDelete(self.action):
+          self.delete()
+        elif isDrop(self.action):
+          self.drop()
+        elif isTake(self.action):
+          self.take()
+        else:
+          print(getInfoMsg(commonNS["not_found"]))
+      except:
+        print(getErrorMsg(commonNS["unexpected_error"]))
     pass
