@@ -53,7 +53,7 @@ class Goose:
     self.loginData = {}
     self.action = ""
     self.env = envs["Local"]
-    self.pathLocal = "/home/zavdev/Desktop/FTP/from server"
+    self.pathLocal = "/"
     self.pathRemote = ""
 
 
@@ -335,9 +335,9 @@ class Goose:
     passwdStr = rushNS["login"]["p"]
     userInput = getUserInput([loginStr, passwdStr])
     self.loginData = {
-      "h": "192.168.0.105", #hostStr,
-      "u": "ubuntu-ftp", #userInput[loginStr],
-      "p": "123", #userInput[passwdStr]
+      "h": hostStr, #192.168.0.105
+      "u": userInput[loginStr], #ubuntu-ftp
+      "p": userInput[passwdStr] #123
     }
     msg = getSuspendMsg(rushNS["connecting"].format(host=self.loginData["h"]))
     print(msg)
