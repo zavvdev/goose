@@ -1,7 +1,8 @@
 {
-  "not_connected": "Cannon drop files since you are not connected to anyone ftp server.",
-  "progress": "Dropping files to server. Wait a bit..",
+  "not_connected": "Cannot drop files since you are not connected to anyone ftp server.",
+  "progress": "Uploading files to server. Wait a bit..",
   "success": "Success! Its all there!",
   "invalid_path": "Path not exist",
-  "transfer_error": "An error occured during the transfer. In seems you have a pure connection with your ftp server."
+  "transfer_error": "An error occured during the transfer. In seems you have a pure connection with your ftp server.",
+  "exists": "The {target} is already exists. Do you want to override?"
 }

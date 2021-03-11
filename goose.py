@@ -33,6 +33,7 @@ from helpers.getUserInput import getUserInput
 from helpers.trimSpaces import trimSpaces
 from helpers.getSingleActionParam import getSingleActionParam
 from helpers.getTimestamp import getTimestamp
+from helpers.isFtpExists import isFtpExists
 
 commonNS = getNamespace(nsAccessors["Common"])
 helpNS = getNamespace(nsAccessors["Help"])
@@ -74,11 +75,16 @@ class Goose:
 
 
   def changeLocalPath(self, nextPath):
-    preparedNextPath = getNextPath(self.pathLocal, nextPath)
-    os.chdir(preparedNextPath)
-    self.pathLocal = preparedNextPath
+    os.chdir(nextPath)
+    self.pathLocal = nextPath
     pass
 
+  
+  def changeRemotePath(self, nextPath):
+    self.ftp.cwd(nextPath)
+    self.pathRemote = nextPath 
+    pass
+  
 
   def rmFtpTree(self, path):
     pathList = self.ftp.list(path, extra=True)
@@ -124,15 +130,38 @@ class Goose:
     pass
 
 
-  def uploadFile(self, targetPath):
-    self.ftp.put(targetPath, "/")
+  def uploadFile(self, targetPath, pathExists, override):
+    _, fileName = os.path.split(targetPath)
+    fileNameToUpload = fileName
+    if not override and pathExists:
+      timestamp = getTimestamp()
+      fileNameToUpload = "{time}_{file}".format(time=timestamp, file=fileName)
+    self.ftp.put(targetPath, fileNameToUpload)
     pass
 
 
-  def uploadTree(self, targetPath):
+  def uploadTree(self, targetPath, pathExists, override):
     _, dirName = os.path.split(targetPath)
-    remoteDirName = getNextPath("/", dirName)
-    self.ftp.upload_tree(targetPath, remoteDirName)
+    dirNameToCreate = dirName
+    if not override and pathExists:
+      timestamp = getTimestamp()
+      dirNameToCreate = "{time}_{dir}".format(time=timestamp, dir=dirName)
+    remoteDirPath = getNextPath(self.pathRemote, dirNameToCreate)
+    if not pathExists or (pathExists and not override):
+      self.ftp.mkd(remoteDirPath)
+    self.changeRemotePath(remoteDirPath)
+    for el in os.listdir(targetPath):
+      elPath = getNextPath(targetPath, el)
+      remoteElPath = getNextPath(self.pathRemote, el)
+      if os.path.isdir(elPath):
+        innerExists = False
+        if isFtpExists(self.ftp, el, self.pathRemote):
+          innerExists = True
+        self.uploadTree(elPath, innerExists, True)
+      else:
+        self.ftp.put(elPath, el)
+    backPath = getNextPath(self.pathRemote, "..")
+    self.changeRemotePath(backPath)
     pass
 
 
@@ -169,7 +198,8 @@ class Goose:
       else:
         localFileName = getNextPath(self.pathLocal, el["name"])
         self.ftp.get(elPath, localFileName)  
-    self.changeLocalPath("..")
+    backPath = getNextPath(self.pathLocal, "..")
+    self.changeLocalPath(backPath)
     pass
 
 
@@ -187,8 +217,7 @@ class Goose:
     else:
       try:
         nextRemotePath = getNextPath(self.pathRemote, dest)
-        self.ftp.cwd(nextRemotePath)
-        self.pathRemote = nextRemotePath 
+        self.changeRemotePath(nextRemotePath)
       except:
         print(getErrorMsg(cdNS["error"].format(dest=nextRemotePath)))
     pass
@@ -213,15 +242,26 @@ class Goose:
 
   def drop(self):
     if self.connected:
+      override = False
+      pathExists = False
       target = getSingleActionParam(Act["Drop"], self.action)
       targetPath = getNextPath(self.pathLocal, target)
       if os.path.exists(targetPath):
+        if isFtpExists(self.ftp, target, self.pathRemote):
+          pathExists = True
+          existsMsg = dropNS["exists"].format(target=target)
+          confOverrideMsg = getInfoMsg(existsMsg)
+          confirmOverride = getUserConfirm(confOverrideMsg)
+          if confirmOverride:
+            override = True
         try:
           print(getSuspendMsg(dropNS["progress"]))
           if os.path.isfile(targetPath):
-            self.uploadFile(targetPath)
+            self.uploadFile(targetPath, pathExists, override)
           elif os.path.isdir(targetPath):
-            self.uploadTree(targetPath)
+            currentRemotePath = self.pathRemote
+            self.uploadTree(targetPath, pathExists, override)
+            self.changeRemotePath(currentRemotePath)
           else:
             raise Exception("Unable to define local path")
           print(getSuccessMsg(dropNS["success"]))
@@ -337,7 +377,7 @@ class Goose:
         errorMsg = getErrorMsg(takeNS["transfer_error"])
         print(errorMsg)
     else:
-      errorMsg = getErrorMsg(dropNS["not_connected"])
+      errorMsg = getErrorMsg(takeNS["not_connected"])
       print(errorMsg)
     pass
 
