@@ -1,5 +1,6 @@
 import os
 import shutil
+from pathlib import Path
 from ftpretty import ftpretty as FTP
 from constants.textStyles import textStyles
 from helpers.ActionVerificators.isExit import isExit
@@ -55,7 +56,7 @@ class Goose:
     self.loginData = {}
     self.action = ""
     self.env = envs["Local"]
-    self.pathLocal = "/"
+    self.pathLocal = str(Path.home())
     self.pathRemote = ""
 
 
