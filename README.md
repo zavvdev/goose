@@ -73,13 +73,6 @@ ls
 ```
 &nbsp;
 
-### ✔ ls
-Print list of content in current directory.
-```sh
-ls
-```
-&nbsp;
-
 ### ✔ whereami (pwd)
 Print current path.
 ```sh
@@ -94,6 +87,13 @@ pwd
 Print your user name.
 ```sh
 whoami
+```
+&nbsp;
+
+### ✔ clear
+Clear terminal.
+```sh
+clear
 ```
 &nbsp;
 

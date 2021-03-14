@@ -40,6 +40,7 @@ def printHelp():
     {ls} -- Print list of content in current directory.
     {whereami} or {whereamiShort} -- Print current path.
     {whoami} -- Print your user name.
+    {clear} -- Clear terminal.
     {helpAct} or {helpActShort} -- Print all available commands.
     {exit} or {exitShort} -- Terminate program.
     """
