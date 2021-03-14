@@ -12,7 +12,6 @@ Connect to remote ftp server.
 ```sh
 rush example.ftp.com
 ```
-Then you should provide Username and Password to connect to server.
 &nbsp;
 
 ### ✔ drop
