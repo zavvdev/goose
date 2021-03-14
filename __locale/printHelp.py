@@ -6,7 +6,8 @@ def printHelp():
   actStyle = textStyles["Bold"] + textStyles["White"]
   noteStyle = textStyles["Yellow"]
   note1 = styledText(noteStyle + "You can provide relative or absolute path for commands that uses it.")
-  note2 = styledText(noteStyle + "You dont need to use double or single quotes to create/delete/upload/download file or directory with spaces in name.\n")
+  note2 = styledText(noteStyle + "You dont need to use double or single quotes to create/delete/upload/download file or directory with spaces in name.")
+  note3 = styledText(noteStyle + "Drop and Take actions move files to where you are at the moment. Example: \"drop my-dir\" will upload my-dir folder in place where you in the remote server now.\n")
   rush = styledText(actStyle + Act["Rush"])
   drop = styledText(actStyle + Act["Drop"])
   take = styledText(actStyle + Act["Take"])
@@ -27,6 +28,7 @@ def printHelp():
     f"""
     {note1}
     {note2}
+    {note3}
     {rush} example.ftp.com -- Connect to remote ftp server.
     {drop} /local/path/to/data -- Upload file or directory to remote ftp server.
     {take} /remote/path/to/data -- Download file or directory from remote ftp server.
