@@ -17,6 +17,7 @@ from helpers.ActionVerificators.isMkdir import isMkdir
 from helpers.ActionVerificators.isDelete import isDelete
 from helpers.ActionVerificators.isDrop import isDrop
 from helpers.ActionVerificators.isTake import isTake
+from helpers.ActionVerificators.isStatus import isStatus
 from helpers.getNamespace import getNamespace
 from constants.nsAccessors import nsAccessors
 from helpers.styledText import styledText
@@ -50,6 +51,7 @@ dropNS = getNamespace(nsAccessors["Drop"])
 takeNS = getNamespace(nsAccessors["Take"])
 clearNS = getNamespace(nsAccessors["Clear"])
 lsNS = getNamespace(nsAccessors["Ls"])
+statusNS = getNamespace(nsAccessors["Status"])
 
 
 class Goose:
@@ -66,15 +68,22 @@ class Goose:
   #------------- Utils -------------#
 
 
+  def setStatusDisconnected(self):
+    self.ftp = None
+    self.connected = False
+    self.env = envs["Local"]
+    self.pathRemote = ""
+    pass
+
+
   def login(self):
     d = self.loginData
-    port = d["port"] if d["port"] else Settings.port
     try:
       self.ftp = FTP(
         d["host"],
         d["user"],
         d["passwd"],
-        port=port,
+        port=d["port"],
         timeout=Settings.timeout
       )
       self.ftp.login(user=d["user"], passwd=d["passwd"])
@@ -84,10 +93,7 @@ class Goose:
       printServerResponseMsg(self.ftp.getwelcome())
       return True
     except Exception as e:
-      self.ftp = None
-      self.connected = False
-      self.env = envs["Local"]
-      self.pathRemote = ""
+      self.setStatusDisconnected()
       printServerResponseMsg(e)
       return False
     pass
@@ -316,7 +322,7 @@ class Goose:
 
 
   def exit(self):
-    if self.connected:
+    if self.connected and self.ftp:
       self.ftp.quit()
     pass
 
@@ -382,7 +388,7 @@ class Goose:
       "host": hostStr,
       "user": userInput[loginStr],
       "passwd": userInput[passwdStr],
-      "port": userInput[portSrt]
+      "port": userInput[portSrt] or Settings.port
     }
     msg = getSuspendMsg(rushNS["connecting"].format(host=self.loginData["host"]))
     print(msg)
@@ -444,6 +450,22 @@ class Goose:
     pass
 
 
+  def status(self):
+    try:
+      printServerResponseMsg(self.ftp.getwelcome())
+      print(getSuccessMsg(statusNS["connected_title"]))
+      print(statusNS["connected_data"].format(
+        host=self.loginData["host"],
+        user=self.loginData["user"],
+        passwd=self.loginData["passwd"],
+        port=self.loginData["port"]
+      ))
+    except:
+      print(getErrorMsg(statusNS["disconnected_title"]))
+      self.setStatusDisconnected()
+    pass
+
+
   #------------- Run -------------#
 
 
@@ -484,6 +506,8 @@ class Goose:
           self.drop()
         elif isTake(self.action):
           self.take()
+        elif isStatus(self.action):
+          self.status()
         else:
           print(getInfoMsg(commonNS["command_not_found"]))
       except:

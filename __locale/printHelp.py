@@ -24,6 +24,7 @@ def printHelp():
   helpActShort = styledText(actStyle + Act["HelpShort"])
   exit = styledText(actStyle + Act["Exit"])
   exitShort = styledText(actStyle + Act["ExitShort"])
+  status = styledText(actStyle + Act["Status"])
   print(
     f"""
     {note1}
@@ -34,6 +35,7 @@ def printHelp():
     {take} /remote/path/to/data -- Download file or directory from remote ftp server.
     {jump} local -- Switch to local environment.
     {jump} remote -- Switch to remote environment.
+    {status} -- Show connection status.
     {mkdir} /path/to/new/dir -- Create directory.
     {delete} /path/to/data -- Delete file or directory.
     {cd} /path/to/dir -- Change directory.

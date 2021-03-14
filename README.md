@@ -42,6 +42,13 @@ jump remote
 ```
 &nbsp;
 
+### ✔ status
+Show connection status.
+```sh
+status
+```
+&nbsp;
+
 ### ✔ dir
 Create directory.
 You can provide relative path as well.

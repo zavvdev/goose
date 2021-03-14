@@ -1,0 +1,5 @@
+{
+  "connected_title": "\n⁕ Connected!",
+  "disconnected_title": "⁕ Disconnected.",
+  "connected_data": "\nHost: {host}\nUsername: {user}\nPassword: {passwd}\nPort: {port}\n"
+}

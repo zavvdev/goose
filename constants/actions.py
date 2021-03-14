@@ -15,6 +15,7 @@ Actions = {
   "Delete": "del",
   "Drop": "drop",
   "Take": "take",
+  "Status": "status",
   "Confirm": {
     "Yes": "yes",
     "No": "no",
