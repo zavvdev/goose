@@ -1,6 +1,5 @@
 nsAccessors = {
   "Common": "common",
-  "Help": "help",
   "Rush": "rush",
   "Jump": "jump",
   "Cd": "cd",
@@ -8,4 +7,5 @@ nsAccessors = {
   "Delete": "delete",
   "Drop": "drop",
   "Take": "take",
+  "Clear": "clear",
 }

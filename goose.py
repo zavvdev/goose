@@ -34,9 +34,10 @@ from helpers.trimSpaces import trimSpaces
 from helpers.getSingleActionParam import getSingleActionParam
 from helpers.getTimestamp import getTimestamp
 from helpers.isFtpExists import isFtpExists
+from helpers.getInputPrompt import getInputPrompt
+from __locale.printHelp import printHelp
 
 commonNS = getNamespace(nsAccessors["Common"])
-helpNS = getNamespace(nsAccessors["Help"])
 rushNS = getNamespace(nsAccessors["Rush"])
 jumpNS = getNamespace(nsAccessors["Jump"])
 cdNS = getNamespace(nsAccessors["Cd"])
@@ -44,6 +45,7 @@ mkdirNS = getNamespace(nsAccessors["Mkdir"])
 deleteNS = getNamespace(nsAccessors["Delete"])
 dropNS = getNamespace(nsAccessors["Drop"])
 takeNS = getNamespace(nsAccessors["Take"])
+clearNS = getNamespace(nsAccessors["Clear"])
 
 
 class Goose:
@@ -99,34 +101,46 @@ class Goose:
 
   
   def deleteLocal(self, target):
+    suspendText = deleteNS["deleting"].format(dir=target)
+    successText = deleteNS["success"]
     localTargetPath = getNextPath(self.pathLocal, target)
     if os.path.isfile(localTargetPath):
       confirmMsg = deleteNS["delete_file"].format(fileName=target)
       confirmDelFile = getUserConfirm(confirmMsg)
       if confirmDelFile:
+        print(getSuspendMsg(suspendText))
         os.remove(localTargetPath)
+        print(getSuccessMsg(successText))
     elif os.path.isdir(localTargetPath):
       confirmMsg = deleteNS["delete_dir"].format(dirName=target)
       confirmDelDir = getUserConfirm(confirmMsg)
       if confirmDelDir:
+        print(getSuspendMsg(suspendText))
         shutil.rmtree(localTargetPath)
+        print(getSuccessMsg(successText))
     else:
       print(getErrorMsg(deleteNS["error"].format(target=target)))
     pass
 
 
   def deleteRemote(self, target):
+    suspendText = deleteNS["deleting"].format(dir=target)
+    successText = deleteNS["success"]
     remoteTargetPath = getNextPath(self.pathRemote, target)
     if isFtpDir(remoteTargetPath, self.ftp):
       confirmMsg = deleteNS["delete_dir"].format(dirName=target)
       confirmDelDir = getUserConfirm(confirmMsg)
       if confirmDelDir:
+        print(getSuspendMsg(suspendText))
         self.rmFtpTree(remoteTargetPath)
+        print(getSuccessMsg(successText))
     else:
       confirmMsg = deleteNS["delete_file"].format(fileName=target)
       confirmDelFile = getUserConfirm(confirmMsg)
       if confirmDelFile:
+        print(getSuspendMsg(suspendText))
         self.ftp.delete(remoteTargetPath)
+        print(getSuccessMsg(successText))
     pass
 
 
@@ -224,13 +238,19 @@ class Goose:
 
 
   def clear(self):
-    print(execCmd("clear"))
+    clearResutl = execCmd("clear")
+    if clearResutl:
+      print(clearResutl)
+    else:
+      print(getErrorMsg(clearNS["cmd_error"]))
     pass
 
 
   def delete(self):
     target = getSingleActionParam(Act["Delete"], self.action)
     try:
+      suspendText = commonNS["processing"].format(dir=target)
+      print(getSuspendMsg(suspendText))
       if self.env == envs["Local"]:
         self.deleteLocal(target)
       else:
@@ -242,6 +262,7 @@ class Goose:
 
   def drop(self):
     if self.connected:
+      print(getSuspendMsg(commonNS["processing"]))
       override = False
       pathExists = False
       target = getSingleActionParam(Act["Drop"], self.action)
@@ -278,14 +299,13 @@ class Goose:
 
 
   def exit(self):
-    try:
+    if self.connected:
       self.ftp.quit()
-    except:
-      pass
+    pass
 
 
   def help(self):
-    print(helpNS["help"])
+    printHelp()
     pass
 
 
@@ -335,9 +355,9 @@ class Goose:
     passwdStr = rushNS["login"]["p"]
     userInput = getUserInput([loginStr, passwdStr])
     self.loginData = {
-      "h": hostStr, #192.168.0.105
-      "u": userInput[loginStr], #ubuntu-ftp
-      "p": userInput[passwdStr] #123
+      "h": hostStr,
+      "u": userInput[loginStr],
+      "p": userInput[passwdStr]
     }
     msg = getSuspendMsg(rushNS["connecting"].format(host=self.loginData["h"]))
     print(msg)
@@ -345,12 +365,13 @@ class Goose:
       msg = rushNS["connected"].format(host=self.loginData["h"])
       print(getSuccessMsg(msg))
     else:
-      print(getErrorMsg(rushNS["connecting_error"]))
+      print(getErrorMsg(rushNS["connecting_error"].format(host=self.loginData["h"])))
     pass
 
 
   def take(self):
     if self.connected:
+      print(getSuspendMsg(commonNS["processing"]))
       override = False
       pathExists = False
       target = getSingleActionParam(Act["Take"], self.action)
@@ -402,15 +423,14 @@ class Goose:
 
 
   def run(self):
-    print(styledText(textStyles["Bold"] + commonNS["app_name"]))
+    self.clear()
+    appNameStyle = textStyles["Bold"] + textStyles["White"]
+    print(styledText(appNameStyle + commonNS["app_name"]))
     while True:
       try:
         isRemote = self.env == envs["Remote"]
         env = commonNS["envs"]["remote"] if isRemote else commonNS["envs"]["local"]
-        style = textStyles["Cyan"] + textStyles["Bold"]
-        inputText = styledText(
-          style + commonNS["input"].format(env=env)
-        )
+        inputText = getInputPrompt(commonNS["input"].format(env=env))
         self.action = input(inputText)
         if isExit(self.action):
           self.exit()
@@ -440,7 +460,7 @@ class Goose:
         elif isTake(self.action):
           self.take()
         else:
-          print(getInfoMsg(commonNS["not_found"]))
+          print(getInfoMsg(commonNS["command_not_found"]))
       except:
         print(getErrorMsg(commonNS["unexpected_error"]))
     pass

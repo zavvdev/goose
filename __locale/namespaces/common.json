@@ -1,0 +1,14 @@
+{
+  "app_name": "Goose v0.0.1. FTP cli tool.\n",
+  "input": "goose~>{env}: ",
+  "command_not_found": "Unknown command. Type \"help\" or \"h\" for all available actions.",
+  "envs": {
+    "local": "",
+    "remote": "(remote)"
+  },
+  "unexpected_error": "It seems something went really wrong with Goose.\nPlease, describe the problem in detail on the project homepage: https://github.com/unsxxndxrk/goose",
+  "confirm": {
+    "tip": "(Yes/No): "
+  },
+  "processing": "Processing.."
+}

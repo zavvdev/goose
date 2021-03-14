@@ -1,4 +1,5 @@
 textStyles = {
+  "White": "\033[97m",
   "Violet": "\033[95m",
   "Blue": "\033[94m",
   "Cyan": "\033[96m",
