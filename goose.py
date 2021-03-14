@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 from ftpretty import ftpretty as FTP
 from constants.textStyles import textStyles
+from constants.settings import Settings
 from helpers.ActionVerificators.isExit import isExit
 from helpers.ActionVerificators.isHelp import isHelp
 from helpers.ActionVerificators.isRush import isRush
@@ -36,6 +37,7 @@ from helpers.getSingleActionParam import getSingleActionParam
 from helpers.getTimestamp import getTimestamp
 from helpers.isFtpExists import isFtpExists
 from helpers.getInputPrompt import getInputPrompt
+from helpers.printServerResponseMsg import printServerResponseMsg
 from __locale.printHelp import printHelp
 
 commonNS = getNamespace(nsAccessors["Common"])
@@ -47,6 +49,7 @@ deleteNS = getNamespace(nsAccessors["Delete"])
 dropNS = getNamespace(nsAccessors["Drop"])
 takeNS = getNamespace(nsAccessors["Take"])
 clearNS = getNamespace(nsAccessors["Clear"])
+lsNS = getNamespace(nsAccessors["Ls"])
 
 
 class Goose:
@@ -65,14 +68,27 @@ class Goose:
 
   def login(self):
     d = self.loginData
+    port = d["port"] if d["port"] else Settings.port
     try:
-      self.ftp = FTP(d["h"], d["u"], d["p"])
-      self.ftp.login(user=d["u"], passwd=d["p"])
+      self.ftp = FTP(
+        d["host"],
+        d["user"],
+        d["passwd"],
+        port=port,
+        timeout=Settings.timeout
+      )
+      self.ftp.login(user=d["user"], passwd=d["passwd"])
       self.connected = True
       self.env = envs["Remote"]
       self.pathRemote = self.ftp.pwd()
+      printServerResponseMsg(self.ftp.getwelcome())
       return True
-    except:
+    except Exception as e:
+      self.ftp = None
+      self.connected = False
+      self.env = envs["Local"]
+      self.pathRemote = ""
+      printServerResponseMsg(e)
       return False
     pass
 
@@ -324,15 +340,21 @@ class Goose:
 
   def ls(self):
     if self.env == envs["Remote"] and self.connected:
-      self.ftp.retrlines("LIST")
+      try:
+        self.ftp.retrlines("LIST")
+      except:
+        print(getErrorMsg(lsNS["error_remote"]))
     else:
-      if os.path.exists(self.pathLocal):
-        os.chdir(self.pathLocal)
-        cmd = "ls -l"
-        output = execCmd(cmd)
-        print(output)
-      else:
-        raise Exception("ls: Path not found")
+      try:
+        if os.path.exists(self.pathLocal):
+          os.chdir(self.pathLocal)
+          cmd = "ls -l"
+          output = execCmd(cmd)
+          print(output)
+        else:
+          raise
+      except:
+        print(getErrorMsg(lsNS["error_local"]))
     pass
 
 
@@ -352,21 +374,23 @@ class Goose:
 
   def rush(self):
     hostStr = getSingleActionParam(Act["Rush"], self.action)
-    loginStr = rushNS["login"]["u"]
-    passwdStr = rushNS["login"]["p"]
-    userInput = getUserInput([loginStr, passwdStr])
+    loginStr = rushNS["login"]["user"]
+    passwdStr = rushNS["login"]["passwd"]
+    portSrt = rushNS["login"]["port"]
+    userInput = getUserInput([loginStr, passwdStr, portSrt])
     self.loginData = {
-      "h": hostStr,
-      "u": userInput[loginStr],
-      "p": userInput[passwdStr]
+      "host": hostStr,
+      "user": userInput[loginStr],
+      "passwd": userInput[passwdStr],
+      "port": userInput[portSrt]
     }
-    msg = getSuspendMsg(rushNS["connecting"].format(host=self.loginData["h"]))
+    msg = getSuspendMsg(rushNS["connecting"].format(host=self.loginData["host"]))
     print(msg)
     if self.login():
-      msg = rushNS["connected"].format(host=self.loginData["h"])
+      msg = rushNS["connected"].format(host=self.loginData["host"])
       print(getSuccessMsg(msg))
     else:
-      print(getErrorMsg(rushNS["connecting_error"].format(host=self.loginData["h"])))
+      print(getErrorMsg(rushNS["connecting_error"].format(host=self.loginData["host"])))
     pass
 
 
@@ -416,7 +440,7 @@ class Goose:
     if self.env == envs["Local"]:
       print(execCmd("whoami"))
     else:
-      print(self.loginData["u"])
+      print(self.loginData["user"])
     pass
 
 
@@ -464,4 +488,5 @@ class Goose:
           print(getInfoMsg(commonNS["command_not_found"]))
       except:
         print(getErrorMsg(commonNS["unexpected_error"]))
+        break
     pass

@@ -8,4 +8,5 @@ nsAccessors = {
   "Drop": "drop",
   "Take": "take",
   "Clear": "clear",
+  "Ls": "ls",
 }

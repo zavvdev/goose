@@ -3,7 +3,8 @@
   "connected": "Successfuly connected to {host}!",
   "connecting_error": "Unable to connect to {host}.",
   "login": {
-    "u": "Username",
-    "p": "Password"
+    "user": "Username",
+    "passwd": "Password",
+    "port": "Port"
   }
 }

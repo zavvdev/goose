@@ -1,0 +1,4 @@
+{
+  "error_remote": "Unable to execute ls command. It seems connection was lost or interrupted.",
+  "error_local": "Unable to execute ls command. Path not found."
+}

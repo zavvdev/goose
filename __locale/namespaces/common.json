@@ -10,5 +10,6 @@
   "confirm": {
     "tip": "(Yes/No): "
   },
-  "processing": "Processing.."
+  "processing": "Processing..",
+  "server_says": "Server says:" 
 }
