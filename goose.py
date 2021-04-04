@@ -69,6 +69,15 @@ class Goose:
   #------------- Utils -------------#
 
 
+  def pingServer(self, message=True):
+    try:
+      self.ftp.voidcmd("NOOP")
+    except:
+      if message:
+        print(getErrorMsg(commonNS["connection_lost"]))
+      self.setStatusDisconnected()
+    pass
+
   def setStatusDisconnected(self):
     self.ftp = None
     self.connected = False
@@ -255,6 +264,7 @@ class Goose:
       else:
         print(getErrorMsg(cdNS["error"].format(dest=nextLocalPath)))
     else:
+      self.pingServer()
       try:
         nextRemotePath = getNextPath(self.pathRemote, dest)
         self.changeRemotePath(nextRemotePath)
@@ -280,13 +290,16 @@ class Goose:
       if self.env == envs["Local"]:
         self.deleteLocal(target)
       else:
-        self.deleteRemote(target)
+        self.pingServer()
+        if self.connected:
+          self.deleteRemote(target)
     except:
       print(getErrorMsg(deleteNS["error"].format(target=target)))     
     pass
 
 
   def drop(self):
+    self.pingServer(message=False)
     if self.connected:
       print(getSuspendMsg(commonNS["processing"]))
       override = False
@@ -325,6 +338,7 @@ class Goose:
 
 
   def exit(self):
+    self.pingServer(message=False)
     if self.connected and self.ftp:
       self.ftp.quit()
     pass
@@ -340,6 +354,7 @@ class Goose:
     if jumpTo == envs["Local"]:
       self.env = envs["Local"]
     else:
+      self.pingServer(message=False)
       if self.connected:
         self.env = envs["Remote"]
       else:
@@ -348,11 +363,13 @@ class Goose:
 
 
   def ls(self):
-    if self.env == envs["Remote"] and self.connected:
-      try:
-        self.ftp.retrlines("LIST")
-      except:
-        print(getErrorMsg(lsNS["error_remote"]))
+    if self.env == envs["Remote"]:
+      self.pingServer()
+      if self.connected:
+        try:
+          self.ftp.retrlines("LIST")
+        except:
+          print(getErrorMsg(lsNS["error"]))
     else:
       try:
         if os.path.exists(self.pathLocal):
@@ -363,7 +380,7 @@ class Goose:
         else:
           raise
       except:
-        print(getErrorMsg(lsNS["error_local"]))
+        print(getErrorMsg(lsNS["error"]))
     pass
 
 
@@ -374,6 +391,7 @@ class Goose:
         localDirPath = getNextPath(self.pathLocal, dirName)
         os.mkdir(localDirPath)
       else:
+        self.pingServer()
         remoteDirPath = getNextPath(self.pathRemote, dirName)
         self.ftp.mkd(remoteDirPath)
     except:
@@ -404,6 +422,7 @@ class Goose:
 
 
   def take(self):
+    self.pingServer(message=False)
     if self.connected:
       print(getSuspendMsg(commonNS["processing"]))
       override = False
@@ -441,7 +460,9 @@ class Goose:
     if self.env == envs["Local"]:
       print(self.pathLocal)
     else:
-      print(self.pathRemote)
+      self.pingServer()
+      if self.connected:
+        print(self.pathRemote)
     pass
 
 
@@ -449,12 +470,15 @@ class Goose:
     if self.env == envs["Local"]:
       print(execCmd("whoami"))
     else:
-      print(self.loginData["user"])
+      self.pingServer()
+      if self.connected:
+        print(self.loginData["user"])
     pass
 
 
   def status(self):
     try:
+      self.ftp.voidcmd("NOOP")
       printServerResponseMsg(self.ftp.getwelcome())
       print(getSuccessMsg(statusNS["connected_title"]))
       print(statusNS["connected_data"].format(

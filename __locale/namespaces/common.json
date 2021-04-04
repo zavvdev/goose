@@ -11,5 +11,6 @@
     "tip": "(Yes/No): "
   },
   "processing": "Processing..",
-  "server_says": "Server says:" 
+  "server_says": "Server says:",
+  "connection_lost": "Connection with ftp-server was lost."
 }
