@@ -32,11 +32,12 @@ from helpers.getSuccessMsg import getSuccessMsg
 from helpers.getInfoMsg import getInfoMsg
 from helpers.getSuspendMsg import getSuspendMsg
 from helpers.isFtpDir import isFtpDir
+from helpers.isFtpFile import isFtpFile
 from helpers.getUserInput import getUserInput
 from helpers.trimSpaces import trimSpaces
 from helpers.getSingleActionParam import getSingleActionParam
 from helpers.getTimestamp import getTimestamp
-from helpers.isFtpExists import isFtpExists
+from helpers.isFtpFileExists import isFtpFileExists
 from helpers.getInputPrompt import getInputPrompt
 from helpers.printServerResponseMsg import printServerResponseMsg
 from __locale.printHelp import printHelp
@@ -142,7 +143,7 @@ class Goose:
         shutil.rmtree(localTargetPath)
         print(getSuccessMsg(successText))
     else:
-      print(getErrorMsg(deleteNS["error"].format(target=target)))
+      raise
     pass
 
 
@@ -157,13 +158,15 @@ class Goose:
         print(getSuspendMsg(suspendText))
         self.rmFtpTree(remoteTargetPath)
         print(getSuccessMsg(successText))
-    else:
+    elif isFtpFile(remoteTargetPath, self.ftp):
       confirmMsg = deleteNS["delete_file"].format(fileName=target)
       confirmDelFile = getUserConfirm(confirmMsg)
       if confirmDelFile:
         print(getSuspendMsg(suspendText))
         self.ftp.delete(remoteTargetPath)
         print(getSuccessMsg(successText))
+    else:
+      raise
     pass
 
 
@@ -192,7 +195,7 @@ class Goose:
       remoteElPath = getNextPath(self.pathRemote, el)
       if os.path.isdir(elPath):
         innerExists = False
-        if isFtpExists(self.ftp, el, self.pathRemote):
+        if isFtpFileExists(self.ftp, el, self.pathRemote):
           innerExists = True
         self.uploadTree(elPath, innerExists, True)
       else:
@@ -291,7 +294,7 @@ class Goose:
       target = getSingleActionParam(Act["Drop"], self.action)
       targetPath = getNextPath(self.pathLocal, target)
       if os.path.exists(targetPath):
-        if isFtpExists(self.ftp, target, self.pathRemote):
+        if isFtpFileExists(self.ftp, target, self.pathRemote):
           pathExists = True
           existsMsg = dropNS["exists"].format(target=target)
           confOverrideMsg = getInfoMsg(existsMsg)

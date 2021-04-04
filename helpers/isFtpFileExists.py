@@ -1,6 +1,6 @@
 import os
 
-def isFtpExists(ftp, target, currentPathRemote):
+def isFtpFileExists(ftp, target, currentPathRemote):
   curDirList = ftp.list(currentPathRemote, extra=True)
   for el in curDirList:
     if el["name"] == target:
