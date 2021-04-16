@@ -134,7 +134,7 @@ class Goose:
 
   
   def deleteLocal(self, target):
-    suspendText = deleteNS["deleting"].format(dir=target)
+    suspendText = deleteNS["deleting"].format(target=target)
     successText = deleteNS["success"]
     localTargetPath = getNextPath(self.pathLocal, target)
     if os.path.isfile(localTargetPath):
@@ -157,7 +157,7 @@ class Goose:
 
 
   def deleteRemote(self, target):
-    suspendText = deleteNS["deleting"].format(dir=target)
+    suspendText = deleteNS["deleting"].format(target=target)
     successText = deleteNS["success"]
     remoteTargetPath = getNextPath(self.pathRemote, target)
     if isFtpDir(remoteTargetPath, self.ftp):
@@ -265,18 +265,19 @@ class Goose:
         print(getErrorMsg(cdNS["error"].format(dest=nextLocalPath)))
     else:
       self.pingServer()
-      try:
-        nextRemotePath = getNextPath(self.pathRemote, dest)
-        self.changeRemotePath(nextRemotePath)
-      except:
-        print(getErrorMsg(cdNS["error"].format(dest=nextRemotePath)))
+      if self.connected:
+        try:
+          nextRemotePath = getNextPath(self.pathRemote, dest)
+          self.changeRemotePath(nextRemotePath)
+        except:
+          print(getErrorMsg(cdNS["error"].format(dest=nextRemotePath)))
     pass
 
 
   def clear(self):
-    clearResutl = execCmd("clear")
-    if clearResutl:
-      print(clearResutl)
+    clearResult = execCmd("clear")
+    if clearResult:
+      print(clearResult)
     else:
       print(getErrorMsg(clearNS["cmd_error"]))
     pass
@@ -392,8 +393,9 @@ class Goose:
         os.mkdir(localDirPath)
       else:
         self.pingServer()
-        remoteDirPath = getNextPath(self.pathRemote, dirName)
-        self.ftp.mkd(remoteDirPath)
+        if self.connected:
+          remoteDirPath = getNextPath(self.pathRemote, dirName)
+          self.ftp.mkd(remoteDirPath)
     except:
       print(getErrorMsg(mkdirNS["error"].format(dirName=dirName)))
     pass

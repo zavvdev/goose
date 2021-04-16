@@ -1,4 +1,4 @@
-# Goose v0.0.1
+# Goose v1.0.0
 #### _CLI Ftp-client. Transfer files with your ftp-server via simple command prompt interface._
 &nbsp;
 

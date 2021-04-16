@@ -1,5 +1,5 @@
 {
-  "app_name": "Goose v0.0.1. FTP cli tool.\n",
+  "app_name": "Goose v1.0.0. FTP cli tool.\n",
   "input": "goose~>{env}: ",
   "command_not_found": "Unknown command. Type \"help\" or \"h\" for all available actions.",
   "envs": {

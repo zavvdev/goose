@@ -2,6 +2,6 @@
   "delete_file": "Do you really want to delete \"{fileName}\" file?",
   "delete_dir": "Do you really want to delete \"{dirName}\" folder?",
   "error": "Unable to delete \"{target}\".",
-  "deleting": "Deleting \"{dir}\"..",
+  "deleting": "Deleting \"{target}\"..",
   "success": "Done."
 }
