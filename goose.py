@@ -134,18 +134,20 @@ class Goose:
 
   
   def deleteLocal(self, target):
-    suspendText = deleteNS["deleting"].format(target=target)
+    _, targetName = os.path.split(target)
+    suspendText = deleteNS["deleting"].format(target=targetName)
     successText = deleteNS["success"]
     localTargetPath = getNextPath(self.pathLocal, target)
+    print(getSuspendMsg(commonNS["processing"]))
     if os.path.isfile(localTargetPath):
-      confirmMsg = deleteNS["delete_file"].format(fileName=target)
+      confirmMsg = deleteNS["delete_file"].format(fileName=targetName)
       confirmDelFile = getUserConfirm(confirmMsg)
       if confirmDelFile:
         print(getSuspendMsg(suspendText))
         os.remove(localTargetPath)
         print(getSuccessMsg(successText))
     elif os.path.isdir(localTargetPath):
-      confirmMsg = deleteNS["delete_dir"].format(dirName=target)
+      confirmMsg = deleteNS["delete_dir"].format(dirName=targetName)
       confirmDelDir = getUserConfirm(confirmMsg)
       if confirmDelDir:
         print(getSuspendMsg(suspendText))
@@ -157,18 +159,20 @@ class Goose:
 
 
   def deleteRemote(self, target):
-    suspendText = deleteNS["deleting"].format(target=target)
+    _, targetName = os.path.split(target)
+    suspendText = deleteNS["deleting"].format(target=targetName)
     successText = deleteNS["success"]
     remoteTargetPath = getNextPath(self.pathRemote, target)
+    print(getSuspendMsg(commonNS["processing"]))
     if isFtpDir(remoteTargetPath, self.ftp):
-      confirmMsg = deleteNS["delete_dir"].format(dirName=target)
+      confirmMsg = deleteNS["delete_dir"].format(dirName=targetName)
       confirmDelDir = getUserConfirm(confirmMsg)
       if confirmDelDir:
         print(getSuspendMsg(suspendText))
         self.rmFtpTree(remoteTargetPath)
         print(getSuccessMsg(successText))
     elif isFtpFile(remoteTargetPath, self.ftp):
-      confirmMsg = deleteNS["delete_file"].format(fileName=target)
+      confirmMsg = deleteNS["delete_file"].format(fileName=targetName)
       confirmDelFile = getUserConfirm(confirmMsg)
       if confirmDelFile:
         print(getSuspendMsg(suspendText))
@@ -286,8 +290,6 @@ class Goose:
   def delete(self):
     target = getSingleActionParam(Act["Delete"], self.action)
     try:
-      suspendText = commonNS["processing"].format(dir=target)
-      print(getSuspendMsg(suspendText))
       if self.env == envs["Local"]:
         self.deleteLocal(target)
       else:
