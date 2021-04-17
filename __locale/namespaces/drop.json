@@ -4,5 +4,5 @@
   "success": "Success! Its all there!",
   "invalid_path": "Path not exist.",
   "transfer_error": "An error occured during the transfer. It seems the connection with server is lost or interrupted.",
-  "exists": "The {target} is already exists. Do you want to override?"
+  "exists": "The \"{target}\" is already exists. Do you want to override?"
 }

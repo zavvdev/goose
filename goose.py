@@ -307,10 +307,11 @@ class Goose:
       pathExists = False
       target = getSingleActionParam(Act["Drop"], self.action)
       targetPath = getNextPath(self.pathLocal, target)
+      _, targetName = os.path.split(target)
       if os.path.exists(targetPath):
-        if isFtpFileExists(self.ftp, target, self.pathRemote):
+        if isFtpFileExists(self.ftp, targetName, self.pathRemote):
           pathExists = True
-          existsMsg = dropNS["exists"].format(target=target)
+          existsMsg = dropNS["exists"].format(target=targetName)
           confOverrideMsg = getInfoMsg(existsMsg)
           confirmOverride = getUserConfirm(confOverrideMsg)
           if confirmOverride:
@@ -435,7 +436,7 @@ class Goose:
       localTargetPath = getNextPath(self.pathLocal, targetName)
       if os.path.exists(localTargetPath):
         pathExists = True
-        existsMsg = takeNS["exists"].format(target=target)
+        existsMsg = takeNS["exists"].format(target=targetName)
         confOverrideMsg = getInfoMsg(existsMsg)
         confirmOverride = getUserConfirm(confOverrideMsg)
         if confirmOverride:
