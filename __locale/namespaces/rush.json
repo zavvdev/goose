@@ -1,7 +1,7 @@
 {
-  "connecting": "Rushing to {host}..",
-  "connected": "Successfuly connected to {host}!",
-  "connecting_error": "Unable to connect to {host}.",
+  "connecting": "Rushing to \"{host}\"..",
+  "connected": "Successfuly connected to \"{host}\"!",
+  "connecting_error": "Unable to connect to \"{host}\".",
   "login": {
     "user": "Username",
     "passwd": "Password",

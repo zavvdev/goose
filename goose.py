@@ -279,7 +279,7 @@ class Goose:
     if clearResult:
       print(clearResult)
     else:
-      print(getErrorMsg(clearNS["cmd_error"]))
+      print(getErrorMsg(clearNS["error"]))
     pass
 
 

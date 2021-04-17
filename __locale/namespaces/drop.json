@@ -1,8 +1,8 @@
 {
-  "not_connected": "Cannot drop files since you are not connected to anyone ftp server.",
-  "progress": "Uploading files to server. Wait a bit..",
-  "success": "Success! Its all there!",
+  "not_connected": "Cannot upload any data since you are not connected to anyone ftp server.",
+  "progress": "Uploading data to server. Wait a bit..",
+  "success": "Success!",
   "invalid_path": "Path not exist.",
-  "transfer_error": "An error occured during the transfer. It seems the connection with server is lost or interrupted.",
-  "exists": "The \"{target}\" is already exists. Do you want to override?"
+  "transfer_error": "An error occured during the transfer.",
+  "exists": "The \"{target}\" is already exists. Do you want to overwrite?\nIf YES, data will be merged. If NO, new file/directory will be created."
 }
