@@ -17,6 +17,6 @@ class Namespace:
 
   def __getNamespace(self, accessor):
     data = []
-    with open("__locale/namespaces/{}.json".format(accessor)) as json_file: 
+    with open("namespaces/{}.json".format(accessor)) as json_file: 
       data = json.load(json_file) 
     return data

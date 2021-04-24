@@ -8,21 +8,16 @@ from modules.Ftp import Ftp
 from modules.Interact import Interact
 from modules.Namespace import Namespace
 
-from constants.textStyles import textStyles
 from constants.settings import settings
-from constants.textStyles import textStyles
 from constants.environments import environments as envs
 from constants.actions import Actions as Act
 
-from utils.styledText import styledText
 from utils.execCmd import execCmd
 from utils.getNextPath import getNextPath
 from utils.trimSpaces import trimSpaces
 from utils.getSingleActionParam import getSingleActionParam
 from utils.getTimestamp import getTimestamp
 from utils.getInputPrompt import getInputPrompt
-
-from __locale.printHelp import printHelp
 
 Av = ActionVerifier()
 Msg = Message()
@@ -306,7 +301,7 @@ class App:
 
 
   def help(self):
-    printHelp()
+    Msg.help()
 
 
   def jump(self):

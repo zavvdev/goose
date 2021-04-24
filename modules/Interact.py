@@ -6,9 +6,6 @@ from modules.Namespace import Namespace
 Ns = Namespace()
 
 class Interact:
-  def __init__(self):
-    pass
-
   def confirm(self, question):
     q = question + "\n"
     yesAct = Act["Confirm"]["Yes"]

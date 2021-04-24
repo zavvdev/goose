@@ -1,11 +1,7 @@
 from constants.actions import Actions as Act
-from utils.trimSpaces import trimSpaces
 from constants.environments import environments as envs
 
 class ActionVerifier:
-  def __init__(self):
-    pass
-
   def __splitAction(self, action):
     return action.split(" ")
     pass

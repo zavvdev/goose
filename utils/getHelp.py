@@ -2,7 +2,7 @@ from constants.actions import Actions as Act
 from utils.styledText import styledText
 from constants.textStyles import textStyles
 
-def printHelp():
+def getHelp():
   actStyle = textStyles["Bold"] + textStyles["White"]
   noteStyle = textStyles["Yellow"]
   note1 = styledText(noteStyle + "You can provide relative or absolute path for commands that uses it.")
@@ -25,8 +25,7 @@ def printHelp():
   exit = styledText(actStyle + Act["Exit"])
   exitShort = styledText(actStyle + Act["ExitShort"])
   status = styledText(actStyle + Act["Status"])
-  print(
-    f"""
+  return f"""
     {note1}
     {note2}
     {note3}
@@ -46,5 +45,4 @@ def printHelp():
     {helpAct} or {helpActShort} -- Print all available commands.
     {exit} or {exitShort} -- Terminate program.
     """
-  )
-  pass
+  
