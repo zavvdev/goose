@@ -1,5 +1,5 @@
 from constants.actions import Actions as Act
-from helpers.trimSpaces import trimSpaces
+from utils.trimSpaces import trimSpaces
 from constants.environments import environments as envs
 
 class ActionVerifier:

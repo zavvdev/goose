@@ -1,7 +1,7 @@
-from helpers.styledText import styledText
+from utils.styledText import styledText
 from constants.textStyles import textStyles
 from constants.environments import environments as envs
-from classes.Namespace import Namespace
+from modules.Namespace import Namespace
 
 Ns = Namespace()
 

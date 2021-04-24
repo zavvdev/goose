@@ -1,4 +1,4 @@
-from helpers.trimSpaces import trimSpaces
+from utils.trimSpaces import trimSpaces
 
 def getSingleActionParam(actionName, action):
   trimmed = trimSpaces(action)

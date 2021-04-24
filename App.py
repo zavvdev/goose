@@ -2,11 +2,11 @@ import os
 import shutil
 from pathlib import Path
 
-from classes.ActionVerifier import ActionVerifier
-from classes.Message import Message
-from classes.Ftp import Ftp
-from classes.Interact import Interact
-from classes.Namespace import Namespace
+from modules.ActionVerifier import ActionVerifier
+from modules.Message import Message
+from modules.Ftp import Ftp
+from modules.Interact import Interact
+from modules.Namespace import Namespace
 
 from constants.textStyles import textStyles
 from constants.settings import settings
@@ -14,14 +14,13 @@ from constants.textStyles import textStyles
 from constants.environments import environments as envs
 from constants.actions import Actions as Act
 
-from helpers.styledText import styledText
-from helpers.execCmd import execCmd
-from helpers.getNextPath import getNextPath
-from helpers.trimSpaces import trimSpaces
-from helpers.getSingleActionParam import getSingleActionParam
-from helpers.getTimestamp import getTimestamp
-from helpers.getInputPrompt import getInputPrompt
-from helpers.processAction import processAction
+from utils.styledText import styledText
+from utils.execCmd import execCmd
+from utils.getNextPath import getNextPath
+from utils.trimSpaces import trimSpaces
+from utils.getSingleActionParam import getSingleActionParam
+from utils.getTimestamp import getTimestamp
+from utils.getInputPrompt import getInputPrompt
 
 from __locale.printHelp import printHelp
 
@@ -43,6 +42,9 @@ class App:
 
   #------------- Utils -------------#
 
+
+  def processAction(self, action):
+    return trimSpaces(action)
 
   def pingServer(self, message=True):
     try:
@@ -448,7 +450,7 @@ class App:
       try:
         inputPrompt = getInputPrompt(self.env)
         action = input(inputPrompt)
-        self.action = processAction(action)
+        self.action = self.processAction(action)
         if Av.isExit(self.action):
           self.exit()
           break
