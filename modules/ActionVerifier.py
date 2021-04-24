@@ -24,10 +24,10 @@ class ActionVerifier:
     return False
     pass
 
-  def isDrop(self, action):
+  def isPut(self, action):
     splited = self.__splitAction(action)
     if len(splited) >= 2:
-      return splited[0] == Act["Drop"]
+      return splited[0] == Act["Put"]
     return False
     pass
 

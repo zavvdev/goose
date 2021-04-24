@@ -14,12 +14,12 @@ rush example.ftp.com
 ```
 &nbsp;
 
-### ✔ drop
+### ✔ put
 Upload file or directory to remote ftp server.
 You can provide relative path as well.
-Note, that "drop" action uploads data to where you are at the moment in the remote server.
+Note, that "put" action uploads data to where you are at the moment in the remote server.
 ```sh
-drop /local/path/to/data
+put /local/path/to/data
 ```
 &nbsp;
 

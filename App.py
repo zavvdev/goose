@@ -259,24 +259,24 @@ class App:
       Msg.error(Ns.delete["error"].format(target=target))   
 
 
-  def drop(self):
+  def put(self):
     self.pingServer(message=False)
     if self.connected:
       Msg.suspend(Ns.common["processing"])
       override = False
       pathExists = False
-      target = getSingleActionParam(Act["Drop"], self.action)
+      target = getSingleActionParam(Act["Put"], self.action)
       targetPath = getNextPath(self.pathLocal, target)
       _, targetName = os.path.split(target)
       if os.path.exists(targetPath):
         if self.ftp.exists(targetName, self.pathRemote):
           pathExists = True
-          existsMsg = Ns.drop["exists"].format(target=targetName)
+          existsMsg = Ns.put["exists"].format(target=targetName)
           confirmOverride = Interact.confirm(existsMsg)
           if confirmOverride:
             override = True
         try:
-          Msg.suspend(Ns.drop["progress"])
+          Msg.suspend(Ns.put["progress"])
           if os.path.isfile(targetPath):
             self.uploadFile(targetPath, pathExists, override)
           elif os.path.isdir(targetPath):
@@ -285,13 +285,13 @@ class App:
             self.changeRemotePath(currentRemotePath)
           else:
             raise Exception("Unable to define local path")
-          Msg.success(Ns.drop["success"])
+          Msg.success(Ns.put["success"])
         except:
-          Msg.error(Ns.drop["transfer_error"])
+          Msg.error(Ns.put["transfer_error"])
       else:
-        Msg.error(Ns.drop["invalid_path"])
+        Msg.error(Ns.put["invalid_path"])
     else:
-      Msg.error(Ns.drop["not_connected"])
+      Msg.error(Ns.put["not_connected"])
 
 
   def exit(self):
@@ -469,8 +469,8 @@ class App:
           self.mkdir()
         elif Av.isDelete(self.action):
           self.delete()
-        elif Av.isDrop(self.action):
-          self.drop()
+        elif Av.isPut(self.action):
+          self.put()
         elif Av.isTake(self.action):
           self.take()
         elif Av.isStatus(self.action):

@@ -9,7 +9,7 @@ class Namespace:
     self.cd = self.__getNamespace(nsAccessors["Cd"])
     self.mkdir = self.__getNamespace(nsAccessors["Mkdir"])
     self.delete = self.__getNamespace(nsAccessors["Delete"])
-    self.drop = self.__getNamespace(nsAccessors["Drop"])
+    self.put = self.__getNamespace(nsAccessors["Put"])
     self.take = self.__getNamespace(nsAccessors["Take"])
     self.clear = self.__getNamespace(nsAccessors["Clear"])
     self.ls = self.__getNamespace(nsAccessors["Ls"])

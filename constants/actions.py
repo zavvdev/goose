@@ -13,7 +13,7 @@ Actions = {
   "Cd": "cd",
   "Mkdir": "dir",
   "Delete": "del",
-  "Drop": "drop",
+  "Put": "put",
   "Take": "take",
   "Status": "status",
   "Confirm": {
