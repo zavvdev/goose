@@ -8,7 +8,6 @@ class Ftp(FTP):
       if el["name"] == target:
         return True
     return False
-    pass
 
   def isDir(self, target):
     path, targetName = os.path.split(target)
@@ -17,7 +16,6 @@ class Ftp(FTP):
       if el["name"] == targetName and el["directory"] == "d":
         return True
     return False
-    pass
 
   def isFile(self, target):
     path, targetName = os.path.split(target)
@@ -26,4 +24,3 @@ class Ftp(FTP):
       if el["name"] == targetName and el["directory"] != "d":
         return True
     return False
-    pass

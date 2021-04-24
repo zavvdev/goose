@@ -10,4 +10,3 @@ def getInputPrompt(env):
   previewEnv = Ns.common["envs"]["remote"] if isRemote else Ns.common["envs"]["local"]
   style = textStyles["Cyan"] + textStyles["Bold"]
   return styledText(style + Ns.common["input"].format(env=previewEnv))
-  pass

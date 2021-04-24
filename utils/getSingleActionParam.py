@@ -5,4 +5,3 @@ def getSingleActionParam(actionName, action):
   actNameLen = len(actionName)
   result = trimmed[actNameLen:]
   return trimSpaces(result)
-  pass

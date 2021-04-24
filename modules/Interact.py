@@ -16,7 +16,6 @@ class Interact:
     if confLover == yesAct or confLover == yesShortAct:
       return True
     return False
-    pass
 
   def multiInput(self, fields):
     result = {}
@@ -24,4 +23,3 @@ class Interact:
       userInput = input(field + ": ")
       result[field] = userInput
     return result
-    pass
