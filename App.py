@@ -1,23 +1,8 @@
 import os
 import shutil
 from pathlib import Path
-from ftpretty import ftpretty as FTP
 from constants.textStyles import textStyles
 from constants.settings import Settings
-from helpers.ActionVerificators.isExit import isExit
-from helpers.ActionVerificators.isHelp import isHelp
-from helpers.ActionVerificators.isRush import isRush
-from helpers.ActionVerificators.isLs import isLs
-from helpers.ActionVerificators.isJump import isJump
-from helpers.ActionVerificators.isClear import isClear
-from helpers.ActionVerificators.isWhereAmI import isWhereAmI
-from helpers.ActionVerificators.isWhoAmI import isWhoAmI
-from helpers.ActionVerificators.isCd import isCd
-from helpers.ActionVerificators.isMkdir import isMkdir
-from helpers.ActionVerificators.isDelete import isDelete
-from helpers.ActionVerificators.isDrop import isDrop
-from helpers.ActionVerificators.isTake import isTake
-from helpers.ActionVerificators.isStatus import isStatus
 from helpers.getNamespace import getNamespace
 from constants.nsAccessors import nsAccessors
 from helpers.styledText import styledText
@@ -27,10 +12,6 @@ from constants.actions import Actions as Act
 from helpers.execCmd import execCmd
 from helpers.getNextPath import getNextPath
 from helpers.getUserConfirm import getUserConfirm
-from helpers.getErrorMsg import getErrorMsg
-from helpers.getSuccessMsg import getSuccessMsg
-from helpers.getInfoMsg import getInfoMsg
-from helpers.getSuspendMsg import getSuspendMsg
 from helpers.isFtpDir import isFtpDir
 from helpers.isFtpFile import isFtpFile
 from helpers.getUserInput import getUserInput
@@ -39,8 +20,12 @@ from helpers.getSingleActionParam import getSingleActionParam
 from helpers.getTimestamp import getTimestamp
 from helpers.isFtpFileExists import isFtpFileExists
 from helpers.getInputPrompt import getInputPrompt
-from helpers.printServerResponseMsg import printServerResponseMsg
 from __locale.printHelp import printHelp
+from helpers.getWelcome import getWelcome
+from helpers.processAction import processAction
+from classes.ActionVerifier import ActionVerifier
+from classes.Message import Message
+from classes.Ftp import Ftp
 
 commonNS = getNamespace(nsAccessors["Common"])
 rushNS = getNamespace(nsAccessors["Rush"])
@@ -54,8 +39,10 @@ clearNS = getNamespace(nsAccessors["Clear"])
 lsNS = getNamespace(nsAccessors["Ls"])
 statusNS = getNamespace(nsAccessors["Status"])
 
+Av = ActionVerifier()
+Msg = Message()
 
-class Goose:
+class App:
   def __init__(self):
     self.ftp = None
     self.connected = False
@@ -68,13 +55,12 @@ class Goose:
 
   #------------- Utils -------------#
 
-
   def pingServer(self, message=True):
     try:
       self.ftp.voidcmd("NOOP")
     except:
       if message:
-        print(getErrorMsg(commonNS["connection_lost"]))
+        Msg.error(commonNS["connection_lost"])
       self.setStatusDisconnected()
     pass
 
@@ -87,24 +73,24 @@ class Goose:
 
 
   def login(self):
-    d = self.loginData
+    loginData = self.loginData
     try:
-      self.ftp = FTP(
-        d["host"],
-        d["user"],
-        d["passwd"],
-        port=d["port"],
+      self.ftp = Ftp(
+        loginData["host"],
+        loginData["user"],
+        loginData["passwd"],
+        port=loginData["port"],
         timeout=Settings.timeout
       )
-      self.ftp.login(user=d["user"], passwd=d["passwd"])
+      self.ftp.login(user=loginData["user"], passwd=loginData["passwd"])
       self.connected = True
       self.env = envs["Remote"]
       self.pathRemote = self.ftp.pwd()
-      printServerResponseMsg(self.ftp.getwelcome())
+      Msg.serverResponse(self.ftp.getwelcome())
       return True
     except Exception as e:
       self.setStatusDisconnected()
-      printServerResponseMsg(e)
+      Msg.serverResponse(e)
       return False
     pass
 
@@ -138,21 +124,21 @@ class Goose:
     suspendText = deleteNS["deleting"].format(target=targetName)
     successText = deleteNS["success"]
     localTargetPath = getNextPath(self.pathLocal, target)
-    print(getSuspendMsg(commonNS["processing"]))
+    Msg.suspend(commonNS["processing"])
     if os.path.isfile(localTargetPath):
       confirmMsg = deleteNS["delete_file"].format(fileName=targetName)
       confirmDelFile = getUserConfirm(confirmMsg)
       if confirmDelFile:
-        print(getSuspendMsg(suspendText))
+        Msg.suspend(suspendText)
         os.remove(localTargetPath)
-        print(getSuccessMsg(successText))
+        Msg.success(successText)
     elif os.path.isdir(localTargetPath):
       confirmMsg = deleteNS["delete_dir"].format(dirName=targetName)
       confirmDelDir = getUserConfirm(confirmMsg)
       if confirmDelDir:
-        print(getSuspendMsg(suspendText))
+        Msg.suspend(suspendText)
         shutil.rmtree(localTargetPath)
-        print(getSuccessMsg(successText))
+        Msg.success(successText)
     else:
       raise
     pass
@@ -167,16 +153,16 @@ class Goose:
       confirmMsg = deleteNS["delete_dir"].format(dirName=targetName)
       confirmDelDir = getUserConfirm(confirmMsg)
       if confirmDelDir:
-        print(getSuspendMsg(suspendText))
+        Msg.suspend(suspendText)
         self.rmFtpTree(remoteTargetPath)
-        print(getSuccessMsg(successText))
+        Msg.success(successText)
     elif isFtpFile(remoteTargetPath, self.ftp):
       confirmMsg = deleteNS["delete_file"].format(fileName=targetName)
       confirmDelFile = getUserConfirm(confirmMsg)
       if confirmDelFile:
-        print(getSuspendMsg(suspendText))
+        Msg.suspend(suspendText)
         self.ftp.delete(remoteTargetPath)
-        print(getSuccessMsg(successText))
+        Msg.success(successText)
     else:
       raise
     pass
@@ -265,7 +251,7 @@ class Goose:
       if os.path.exists(nextLocalPath):
         self.changeLocalPath(nextLocalPath)  
       else:
-        print(getErrorMsg(cdNS["error"].format(dest=nextLocalPath)))
+        Msg.error(cdNS["error"].format(dest=nextLocalPath))
     else:
       self.pingServer()
       if self.connected:
@@ -273,7 +259,7 @@ class Goose:
           nextRemotePath = getNextPath(self.pathRemote, dest)
           self.changeRemotePath(nextRemotePath)
         except:
-          print(getErrorMsg(cdNS["error"].format(dest=nextRemotePath)))
+          Msg.error(cdNS["error"].format(dest=nextRemotePath))
     pass
 
 
@@ -282,13 +268,13 @@ class Goose:
     if clearResult:
       print(clearResult)
     else:
-      print(getErrorMsg(clearNS["error"]))
+      Msg.error(clearNS["error"])
     pass
 
 
   def delete(self):
     target = getSingleActionParam(Act["Delete"], self.action)
-    print(getSuspendMsg(commonNS["processing"]))
+    Msg.suspend(commonNS["processing"])
     try:
       if self.env == envs["Local"]:
         self.deleteLocal(target)
@@ -297,14 +283,14 @@ class Goose:
         if self.connected:
           self.deleteRemote(target)
     except:
-      print(getErrorMsg(deleteNS["error"].format(target=target)))     
+      Msg.error(deleteNS["error"].format(target=target))   
     pass
 
 
   def drop(self):
     self.pingServer(message=False)
     if self.connected:
-      print(getSuspendMsg(commonNS["processing"]))
+      Msg.suspend(commonNS["processing"])
       override = False
       pathExists = False
       target = getSingleActionParam(Act["Drop"], self.action)
@@ -314,12 +300,12 @@ class Goose:
         if isFtpFileExists(self.ftp, targetName, self.pathRemote):
           pathExists = True
           existsMsg = dropNS["exists"].format(target=targetName)
-          confOverrideMsg = getInfoMsg(existsMsg)
-          confirmOverride = getUserConfirm(confOverrideMsg)
+          Msg.info(existsMsg)
+          confirmOverride = getUserConfirm()
           if confirmOverride:
             override = True
         try:
-          print(getSuspendMsg(dropNS["progress"]))
+          Msg.suspend(dropNS["progress"])
           if os.path.isfile(targetPath):
             self.uploadFile(targetPath, pathExists, override)
           elif os.path.isdir(targetPath):
@@ -328,16 +314,13 @@ class Goose:
             self.changeRemotePath(currentRemotePath)
           else:
             raise Exception("Unable to define local path")
-          print(getSuccessMsg(dropNS["success"]))
+          Msg.success(dropNS["success"])
         except:
-          errorMsg = getErrorMsg(dropNS["transfer_error"])
-          print(errorMsg)
+          Msg.error(dropNS["transfer_error"])
       else:
-        errorMsg = getErrorMsg(dropNS["invalid_path"])
-        print(errorMsg)
+        Msg.error(dropNS["invalid_path"])
     else:
-      errorMsg = getErrorMsg(dropNS["not_connected"])
-      print(errorMsg)
+      Msg.error(dropNS["not_connected"])
     pass
 
 
@@ -362,7 +345,7 @@ class Goose:
       if self.connected:
         self.env = envs["Remote"]
       else:
-        print(getErrorMsg(jumpNS["not_connected"])) 
+        Msg.error(jumpNS["not_connected"])
     pass
 
 
@@ -373,7 +356,7 @@ class Goose:
         try:
           self.ftp.retrlines("LIST")
         except:
-          print(getErrorMsg(lsNS["error"]))
+          Msg.error(lsNS["error"])
     else:
       try:
         if os.path.exists(self.pathLocal):
@@ -384,7 +367,7 @@ class Goose:
         else:
           raise
       except:
-        print(getErrorMsg(lsNS["error"]))
+        Msg.error(lsNS["error"])
     pass
 
 
@@ -400,7 +383,7 @@ class Goose:
           remoteDirPath = getNextPath(self.pathRemote, dirName)
           self.ftp.mkd(remoteDirPath)
     except:
-      print(getErrorMsg(mkdirNS["error"].format(dirName=dirName)))
+      Msg.error(mkdirNS["error"].format(dirName=dirName))
     pass
 
 
@@ -416,20 +399,18 @@ class Goose:
       "passwd": userInput[passwdStr],
       "port": userInput[portSrt] or Settings.port
     }
-    msg = getSuspendMsg(rushNS["connecting"].format(host=self.loginData["host"]))
-    print(msg)
+    Msg.suspend(rushNS["connecting"].format(host=self.loginData["host"]))
     if self.login():
-      msg = rushNS["connected"].format(host=self.loginData["host"])
-      print(getSuccessMsg(msg))
+      Msg.success(rushNS["connected"].format(host=self.loginData["host"]))
     else:
-      print(getErrorMsg(rushNS["connecting_error"].format(host=self.loginData["host"])))
+      Msg.error(rushNS["connecting_error"].format(host=self.loginData["host"]))
     pass
 
 
   def take(self):
     self.pingServer(message=False)
     if self.connected:
-      print(getSuspendMsg(commonNS["processing"]))
+      Msg.suspend(commonNS["processing"])
       override = False
       pathExists = False
       target = getSingleActionParam(Act["Take"], self.action)
@@ -438,26 +419,23 @@ class Goose:
       localTargetPath = getNextPath(self.pathLocal, targetName)
       if os.path.exists(localTargetPath):
         pathExists = True
-        existsMsg = takeNS["exists"].format(target=targetName)
-        confOverrideMsg = getInfoMsg(existsMsg)
-        confirmOverride = getUserConfirm(confOverrideMsg)
+        Msg.info(takeNS["exists"].format(target=targetName))
+        confirmOverride = getUserConfirm()
         if confirmOverride:
           override = True
       try:
-        print(getSuspendMsg(takeNS["progress"]))
+        Msg.suspend(takeNS["progress"])
         if isFtpDir(targetPath, self.ftp):
           currentLocalPath = self.pathLocal
           self.downloadTree(targetPath, pathExists, override)
           self.changeLocalPath(currentLocalPath)
         else:
           self.downloadFile(targetPath, pathExists, override)
-        print(getSuccessMsg(takeNS["success"]))
+        Msg.success(takeNS["success"])
       except:
-        errorMsg = getErrorMsg(takeNS["transfer_error"])
-        print(errorMsg)
+        Msg.error(takeNS["transfer_error"])
     else:
-      errorMsg = getErrorMsg(takeNS["not_connected"])
-      print(errorMsg)
+      Msg.error(takeNS["not_connected"])
     pass
 
 
@@ -484,16 +462,16 @@ class Goose:
   def status(self):
     try:
       self.ftp.voidcmd("NOOP")
-      printServerResponseMsg(self.ftp.getwelcome())
-      print(getSuccessMsg(statusNS["connected_title"]))
-      print(statusNS["connected_data"].format(
+      Msg.serverResponse(self.ftp.getwelcome())
+      Msg.success(statusNS["connected_title"])
+      Msg.default(statusNS["connected_data"].format(
         host=self.loginData["host"],
         user=self.loginData["user"],
         passwd=self.loginData["passwd"],
         port=self.loginData["port"]
       ))
     except:
-      print(getErrorMsg(statusNS["disconnected_title"]))
+      Msg.error(statusNS["disconnected_title"])
       self.setStatusDisconnected()
     pass
 
@@ -503,46 +481,44 @@ class Goose:
 
   def run(self):
     self.clear()
-    appNameStyle = textStyles["Bold"] + textStyles["White"]
-    print(styledText(appNameStyle + commonNS["app_name"]))
+    print(getWelcome())
     while True:
       try:
-        isRemote = self.env == envs["Remote"]
-        env = commonNS["envs"]["remote"] if isRemote else commonNS["envs"]["local"]
-        inputText = getInputPrompt(commonNS["input"].format(env=env))
-        self.action = input(inputText)
-        if isExit(self.action):
+        inputPrompt = getInputPrompt(self.env)
+        action = input(inputPrompt)
+        self.action = processAction(action)
+        if Av.isExit(self.action):
           self.exit()
           break
-        elif isClear(self.action):
+        elif Av.isClear(self.action):
           self.clear()
-        elif isHelp(self.action):
+        elif Av.isHelp(self.action):
           self.help()
-        elif isRush(self.action):
+        elif Av.isRush(self.action):
           self.rush()
-        elif isLs(self.action):
+        elif Av.isLs(self.action):
           self.ls()
-        elif isJump(self.action):
+        elif Av.isJump(self.action):
           self.jump()
-        elif isWhereAmI(self.action):
+        elif Av.isWhereAmI(self.action):
           self.whereAmI()
-        elif isWhoAmI(self.action):
+        elif Av.isWhoAmI(self.action):
           self.whoAmI()
-        elif isCd(self.action):
+        elif Av.isCd(self.action):
           self.cd()
-        elif isMkdir(self.action):
+        elif Av.isMkdir(self.action):
           self.mkdir()
-        elif isDelete(self.action):
+        elif Av.isDelete(self.action):
           self.delete()
-        elif isDrop(self.action):
+        elif Av.isDrop(self.action):
           self.drop()
-        elif isTake(self.action):
+        elif Av.isTake(self.action):
           self.take()
-        elif isStatus(self.action):
+        elif Av.isStatus(self.action):
           self.status()
         else:
-          print(getInfoMsg(commonNS["command_not_found"]))
+          Msg.info(commonNS["command_not_found"])
       except:
-        print(getErrorMsg(commonNS["unexpected_error"]))
+        Msg.error(commonNS["unexpected_error"])
         break
     pass

@@ -1,4 +1,4 @@
-from goose import Goose
+from App import App
 
-goose = Goose()
-goose.run()
+app = App()
+app.run()

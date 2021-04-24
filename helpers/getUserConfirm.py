@@ -6,12 +6,11 @@ from constants.nsAccessors import nsAccessors
 
 commonNS = getNamespace(nsAccessors["Common"])
 
-def getUserConfirm(question):
-  q = question + "\n"
+def getUserConfirm():
   yesAct = Act["Confirm"]["Yes"]
   yesShortAct = Act["Confirm"]["YesShort"]
   confTip = commonNS["confirm"]["tip"]
-  conf = input(styledText(textStyles["Yellow"] + q + confTip))
+  conf = input(styledText(textStyles["Yellow"] + confTip))
   if conf.lower() == yesAct or conf.lower() == yesShortAct:
     return True
   else:
