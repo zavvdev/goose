@@ -1,9 +1,8 @@
 from helpers.styledText import styledText
 from constants.textStyles import textStyles
-from helpers.getNamespace import getNamespace
-from constants.nsAccessors import nsAccessors
+from classes.Namespace import Namespace
 
-commonNS = getNamespace(nsAccessors["Common"])
+Ns = Namespace()
 
 class Message:
   def __init__(self):
@@ -14,7 +13,7 @@ class Message:
     pass
 
   def welcome(self):
-    welcomeMessage = commonNS["welcome_message"]
+    welcomeMessage = Ns.common["welcome_message"]
     style = textStyles["Bold"] + textStyles["White"]
     print(styledText(style + welcomeMessage))
     pass
@@ -36,5 +35,5 @@ class Message:
     pass
 
   def serverResponse(self, text):
-    print(commonNS["server_says"], text)
+    print(Ns.common["server_says"], text)
     pass
