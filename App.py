@@ -5,6 +5,7 @@ from pathlib import Path
 from classes.ActionVerifier import ActionVerifier
 from classes.Message import Message
 from classes.Ftp import Ftp
+from classes.Interact import Interact
 
 from constants.textStyles import textStyles
 from constants.settings import settings
@@ -17,8 +18,6 @@ from helpers.getNamespace import getNamespace
 from helpers.styledText import styledText
 from helpers.execCmd import execCmd
 from helpers.getNextPath import getNextPath
-from helpers.getUserConfirm import getUserConfirm
-from helpers.getUserInput import getUserInput
 from helpers.trimSpaces import trimSpaces
 from helpers.getSingleActionParam import getSingleActionParam
 from helpers.getTimestamp import getTimestamp
@@ -41,6 +40,7 @@ statusNS = getNamespace(nsAccessors["Status"])
 
 Av = ActionVerifier()
 Msg = Message()
+Interact = Interact()
 
 class App:
   def __init__(self):
@@ -64,6 +64,7 @@ class App:
         Msg.error(commonNS["connection_lost"])
       self.setStatusDisconnected()
     pass
+
 
   def setStatusDisconnected(self):
     self.ftp = None
@@ -128,14 +129,14 @@ class App:
     Msg.suspend(commonNS["processing"])
     if os.path.isfile(localTargetPath):
       confirmMsg = deleteNS["delete_file"].format(fileName=targetName)
-      confirmDelFile = getUserConfirm(confirmMsg)
+      confirmDelFile = Interact.confirm(confirmMsg)
       if confirmDelFile:
         Msg.suspend(suspendText)
         os.remove(localTargetPath)
         Msg.success(successText)
     elif os.path.isdir(localTargetPath):
       confirmMsg = deleteNS["delete_dir"].format(dirName=targetName)
-      confirmDelDir = getUserConfirm(confirmMsg)
+      confirmDelDir = Interact.confirm(confirmMsg)
       if confirmDelDir:
         Msg.suspend(suspendText)
         shutil.rmtree(localTargetPath)
@@ -152,14 +153,14 @@ class App:
     remoteTargetPath = getNextPath(self.pathRemote, target)
     if self.ftp.isDir(remoteTargetPath):
       confirmMsg = deleteNS["delete_dir"].format(dirName=targetName)
-      confirmDelDir = getUserConfirm(confirmMsg)
+      confirmDelDir = Interact.confirm(confirmMsg)
       if confirmDelDir:
         Msg.suspend(suspendText)
         self.rmFtpTree(remoteTargetPath)
         Msg.success(successText)
     elif self.ftp.isFile(remoteTargetPath):
       confirmMsg = deleteNS["delete_file"].format(fileName=targetName)
-      confirmDelFile = getUserConfirm(confirmMsg)
+      confirmDelFile = Interact.confirm(confirmMsg)
       if confirmDelFile:
         Msg.suspend(suspendText)
         self.ftp.delete(remoteTargetPath)
@@ -301,7 +302,7 @@ class App:
         if self.ftp.exists(targetName, self.pathRemote):
           pathExists = True
           existsMsg = dropNS["exists"].format(target=targetName)
-          confirmOverride = getUserConfirm(existsMsg)
+          confirmOverride = Interact.confirm(existsMsg)
           if confirmOverride:
             override = True
         try:
@@ -392,7 +393,7 @@ class App:
     loginStr = rushNS["login"]["user"]
     passwdStr = rushNS["login"]["passwd"]
     portSrt = rushNS["login"]["port"]
-    userInput = getUserInput([loginStr, passwdStr, portSrt])
+    userInput = Interact.multiInput([loginStr, passwdStr, portSrt])
     self.loginData = {
       "host": hostStr,
       "user": userInput[loginStr],
@@ -419,7 +420,7 @@ class App:
       localTargetPath = getNextPath(self.pathLocal, targetName)
       if os.path.exists(localTargetPath):
         pathExists = True
-        confirmOverride = getUserConfirm(takeNS["exists"].format(target=targetName))
+        confirmOverride = Interact.confirm(takeNS["exists"].format(target=targetName))
         if confirmOverride:
           override = True
       try:
