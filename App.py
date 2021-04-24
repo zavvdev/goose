@@ -1,31 +1,32 @@
 import os
 import shutil
 from pathlib import Path
+
+from classes.ActionVerifier import ActionVerifier
+from classes.Message import Message
+from classes.Ftp import Ftp
+
 from constants.textStyles import textStyles
-from constants.settings import Settings
-from helpers.getNamespace import getNamespace
-from constants.nsAccessors import nsAccessors
-from helpers.styledText import styledText
+from constants.settings import settings
 from constants.textStyles import textStyles
 from constants.environments import environments as envs
 from constants.actions import Actions as Act
+from constants.nsAccessors import nsAccessors
+
+from helpers.getNamespace import getNamespace
+from helpers.styledText import styledText
 from helpers.execCmd import execCmd
 from helpers.getNextPath import getNextPath
 from helpers.getUserConfirm import getUserConfirm
-from helpers.isFtpDir import isFtpDir
-from helpers.isFtpFile import isFtpFile
 from helpers.getUserInput import getUserInput
 from helpers.trimSpaces import trimSpaces
 from helpers.getSingleActionParam import getSingleActionParam
 from helpers.getTimestamp import getTimestamp
-from helpers.isFtpFileExists import isFtpFileExists
 from helpers.getInputPrompt import getInputPrompt
-from __locale.printHelp import printHelp
 from helpers.getWelcome import getWelcome
 from helpers.processAction import processAction
-from classes.ActionVerifier import ActionVerifier
-from classes.Message import Message
-from classes.Ftp import Ftp
+
+from __locale.printHelp import printHelp
 
 commonNS = getNamespace(nsAccessors["Common"])
 rushNS = getNamespace(nsAccessors["Rush"])
@@ -55,6 +56,7 @@ class App:
 
   #------------- Utils -------------#
 
+
   def pingServer(self, message=True):
     try:
       self.ftp.voidcmd("NOOP")
@@ -80,7 +82,7 @@ class App:
         loginData["user"],
         loginData["passwd"],
         port=loginData["port"],
-        timeout=Settings.timeout
+        timeout=settings["timeout"]
       )
       self.ftp.login(user=loginData["user"], passwd=loginData["passwd"])
       self.connected = True
@@ -149,14 +151,14 @@ class App:
     suspendText = deleteNS["deleting"].format(target=targetName)
     successText = deleteNS["success"]
     remoteTargetPath = getNextPath(self.pathRemote, target)
-    if isFtpDir(remoteTargetPath, self.ftp):
+    if self.ftp.isDir(remoteTargetPath):
       confirmMsg = deleteNS["delete_dir"].format(dirName=targetName)
       confirmDelDir = getUserConfirm(confirmMsg)
       if confirmDelDir:
         Msg.suspend(suspendText)
         self.rmFtpTree(remoteTargetPath)
         Msg.success(successText)
-    elif isFtpFile(remoteTargetPath, self.ftp):
+    elif self.ftp.isFile(remoteTargetPath):
       confirmMsg = deleteNS["delete_file"].format(fileName=targetName)
       confirmDelFile = getUserConfirm(confirmMsg)
       if confirmDelFile:
@@ -193,7 +195,7 @@ class App:
       remoteElPath = getNextPath(self.pathRemote, el)
       if os.path.isdir(elPath):
         innerExists = False
-        if isFtpFileExists(self.ftp, el, self.pathRemote):
+        if self.ftp.exists(el, self.pathRemote):
           innerExists = True
         self.uploadTree(elPath, innerExists, True)
       else:
@@ -297,11 +299,10 @@ class App:
       targetPath = getNextPath(self.pathLocal, target)
       _, targetName = os.path.split(target)
       if os.path.exists(targetPath):
-        if isFtpFileExists(self.ftp, targetName, self.pathRemote):
+        if self.ftp.exists(targetName, self.pathRemote):
           pathExists = True
           existsMsg = dropNS["exists"].format(target=targetName)
-          Msg.info(existsMsg)
-          confirmOverride = getUserConfirm()
+          confirmOverride = getUserConfirm(existsMsg)
           if confirmOverride:
             override = True
         try:
@@ -397,7 +398,7 @@ class App:
       "host": hostStr,
       "user": userInput[loginStr],
       "passwd": userInput[passwdStr],
-      "port": userInput[portSrt] or Settings.port
+      "port": userInput[portSrt] or settings["port"]
     }
     Msg.suspend(rushNS["connecting"].format(host=self.loginData["host"]))
     if self.login():
@@ -419,13 +420,12 @@ class App:
       localTargetPath = getNextPath(self.pathLocal, targetName)
       if os.path.exists(localTargetPath):
         pathExists = True
-        Msg.info(takeNS["exists"].format(target=targetName))
-        confirmOverride = getUserConfirm()
+        confirmOverride = getUserConfirm(takeNS["exists"].format(target=targetName))
         if confirmOverride:
           override = True
       try:
         Msg.suspend(takeNS["progress"])
-        if isFtpDir(targetPath, self.ftp):
+        if self.ftp.isDir(targetPath):
           currentLocalPath = self.pathLocal
           self.downloadTree(targetPath, pathExists, override)
           self.changeLocalPath(currentLocalPath)
