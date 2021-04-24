@@ -13,6 +13,12 @@ class Message:
     print(text)
     pass
 
+  def welcome(self):
+    welcomeMessage = commonNS["welcome_message"]
+    style = textStyles["Bold"] + textStyles["White"]
+    print(styledText(style + welcomeMessage))
+    pass
+
   def error(self, text):
     print(styledText(textStyles["Red"] + text))
     pass

@@ -23,7 +23,6 @@ from helpers.trimSpaces import trimSpaces
 from helpers.getSingleActionParam import getSingleActionParam
 from helpers.getTimestamp import getTimestamp
 from helpers.getInputPrompt import getInputPrompt
-from helpers.getWelcome import getWelcome
 from helpers.processAction import processAction
 
 from __locale.printHelp import printHelp
@@ -481,7 +480,7 @@ class App:
 
   def run(self):
     self.clear()
-    print(getWelcome())
+    Msg.welcome()
     while True:
       try:
         inputPrompt = getInputPrompt(self.env)
