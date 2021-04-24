@@ -3,14 +3,14 @@ from constants.textStyles import textStyles
 from modules.Namespace import Namespace
 from utils.getHelp import getHelp
 
-Ns = Namespace()
+ns = Namespace()
 
 class Message:
   def default(self, text):
     print(text)
 
   def welcome(self):
-    welcomeMessage = Ns.common["welcome_message"]
+    welcomeMessage = ns.common["welcome_message"]
     style = textStyles["Bold"] + textStyles["White"]
     print(styledText(style + welcomeMessage))
 
@@ -27,7 +27,7 @@ class Message:
     print(styledText(textStyles["Violet"] + text))
 
   def serverResponse(self, text):
-    print(Ns.common["server_says"], text)
+    print(ns.common["server_says"], text)
 
   def help(self):
     print(getHelp())

@@ -19,10 +19,10 @@ from utils.getSingleActionParam import getSingleActionParam
 from utils.getTimestamp import getTimestamp
 from utils.getInputPrompt import getInputPrompt
 
-Av = ActionVerifier()
-Msg = Message()
-Interact = Interact()
-Ns = Namespace()
+av = ActionVerifier()
+msg = Message()
+interact = Interact()
+ns = Namespace()
 
 class App:
   def __init__(self):
@@ -35,18 +35,16 @@ class App:
     self.pathRemote = ""
 
 
-  #------------- Utils -------------#
-
-
   def processAction(self, action):
     return trimSpaces(action)
+
 
   def pingServer(self, message=True):
     try:
       self.ftp.voidcmd("NOOP")
     except:
       if message:
-        Msg.error(Ns.common["connection_lost"])
+        msg.error(ns.common["connection_lost"])
       self.setStatusDisconnected()
 
 
@@ -71,11 +69,11 @@ class App:
       self.connected = True
       self.env = envs["Remote"]
       self.pathRemote = self.ftp.pwd()
-      Msg.serverResponse(self.ftp.getwelcome())
+      msg.serverResponse(self.ftp.getwelcome())
       return True
     except Exception as e:
       self.setStatusDisconnected()
-      Msg.serverResponse(e)
+      msg.serverResponse(e)
       return False
 
 
@@ -102,47 +100,47 @@ class App:
   
   def deleteLocal(self, target):
     _, targetName = os.path.split(target)
-    suspendText = Ns.delete["deleting"].format(target=targetName)
-    successText = Ns.delete["success"]
+    suspendText = ns.delete["deleting"].format(target=targetName)
+    successText = ns.delete["success"]
     localTargetPath = getNextPath(self.pathLocal, target)
-    Msg.suspend(Ns.common["processing"])
+    msg.suspend(ns.common["processing"])
     if os.path.isfile(localTargetPath):
-      confirmMsg = Ns.delete["delete_file"].format(fileName=targetName)
-      confirmDelFile = Interact.confirm(confirmMsg)
+      confirmMsg = ns.delete["delete_file"].format(fileName=targetName)
+      confirmDelFile = interact.confirm(confirmMsg)
       if confirmDelFile:
-        Msg.suspend(suspendText)
+        msg.suspend(suspendText)
         os.remove(localTargetPath)
-        Msg.success(successText)
+        msg.success(successText)
     elif os.path.isdir(localTargetPath):
-      confirmMsg = Ns.delete["delete_dir"].format(dirName=targetName)
-      confirmDelDir = Interact.confirm(confirmMsg)
+      confirmMsg = ns.delete["delete_dir"].format(dirName=targetName)
+      confirmDelDir = interact.confirm(confirmMsg)
       if confirmDelDir:
-        Msg.suspend(suspendText)
+        msg.suspend(suspendText)
         shutil.rmtree(localTargetPath)
-        Msg.success(successText)
+        msg.success(successText)
     else:
       raise
 
 
   def deleteRemote(self, target):
     _, targetName = os.path.split(target)
-    suspendText = Ns.delete["deleting"].format(target=targetName)
-    successText = Ns.delete["success"]
+    suspendText = ns.delete["deleting"].format(target=targetName)
+    successText = ns.delete["success"]
     remoteTargetPath = getNextPath(self.pathRemote, target)
     if self.ftp.isDir(remoteTargetPath):
-      confirmMsg = Ns.delete["delete_dir"].format(dirName=targetName)
-      confirmDelDir = Interact.confirm(confirmMsg)
+      confirmMsg = ns.delete["delete_dir"].format(dirName=targetName)
+      confirmDelDir = interact.confirm(confirmMsg)
       if confirmDelDir:
-        Msg.suspend(suspendText)
+        msg.suspend(suspendText)
         self.rmFtpTree(remoteTargetPath)
-        Msg.success(successText)
+        msg.success(successText)
     elif self.ftp.isFile(remoteTargetPath):
-      confirmMsg = Ns.delete["delete_file"].format(fileName=targetName)
-      confirmDelFile = Interact.confirm(confirmMsg)
+      confirmMsg = ns.delete["delete_file"].format(fileName=targetName)
+      confirmDelFile = interact.confirm(confirmMsg)
       if confirmDelFile:
-        Msg.suspend(suspendText)
+        msg.suspend(suspendText)
         self.ftp.delete(remoteTargetPath)
-        Msg.success(successText)
+        msg.success(successText)
     else:
       raise
 
@@ -216,9 +214,6 @@ class App:
     self.changeLocalPath(backPath)
 
 
-  #------------- Actions -------------#
-
-
   def cd(self):
     dest = getSingleActionParam(Act["Cd"], self.action)
     if self.env == envs["Local"]:
@@ -226,7 +221,7 @@ class App:
       if os.path.exists(nextLocalPath):
         self.changeLocalPath(nextLocalPath)  
       else:
-        Msg.error(Ns.cd["error"].format(dest=nextLocalPath))
+        msg.error(ns.cd["error"].format(dest=nextLocalPath))
     else:
       self.pingServer()
       if self.connected:
@@ -234,7 +229,7 @@ class App:
           nextRemotePath = getNextPath(self.pathRemote, dest)
           self.changeRemotePath(nextRemotePath)
         except:
-          Msg.error(Ns.cd["error"].format(dest=nextRemotePath))
+          msg.error(ns.cd["error"].format(dest=nextRemotePath))
 
 
   def clear(self):
@@ -242,12 +237,12 @@ class App:
     if clearResult:
       print(clearResult)
     else:
-      Msg.error(Ns.clear["error"])
+      msg.error(ns.clear["error"])
 
 
   def delete(self):
     target = getSingleActionParam(Act["Delete"], self.action)
-    Msg.suspend(Ns.common["processing"])
+    msg.suspend(ns.common["processing"])
     try:
       if self.env == envs["Local"]:
         self.deleteLocal(target)
@@ -256,13 +251,13 @@ class App:
         if self.connected:
           self.deleteRemote(target)
     except:
-      Msg.error(Ns.delete["error"].format(target=target))   
+      msg.error(ns.delete["error"].format(target=target))   
 
 
   def put(self):
     self.pingServer(message=False)
     if self.connected:
-      Msg.suspend(Ns.common["processing"])
+      msg.suspend(ns.common["processing"])
       override = False
       pathExists = False
       target = getSingleActionParam(Act["Put"], self.action)
@@ -271,12 +266,12 @@ class App:
       if os.path.exists(targetPath):
         if self.ftp.exists(targetName, self.pathRemote):
           pathExists = True
-          existsMsg = Ns.put["exists"].format(target=targetName)
-          confirmOverride = Interact.confirm(existsMsg)
+          existsMsg = ns.put["exists"].format(target=targetName)
+          confirmOverride = interact.confirm(existsMsg)
           if confirmOverride:
             override = True
         try:
-          Msg.suspend(Ns.put["progress"])
+          msg.suspend(ns.put["progress"])
           if os.path.isfile(targetPath):
             self.uploadFile(targetPath, pathExists, override)
           elif os.path.isdir(targetPath):
@@ -285,13 +280,13 @@ class App:
             self.changeRemotePath(currentRemotePath)
           else:
             raise Exception("Unable to define local path")
-          Msg.success(Ns.put["success"])
+          msg.success(ns.put["success"])
         except:
-          Msg.error(Ns.put["transfer_error"])
+          msg.error(ns.put["transfer_error"])
       else:
-        Msg.error(Ns.put["invalid_path"])
+        msg.error(ns.put["invalid_path"])
     else:
-      Msg.error(Ns.put["not_connected"])
+      msg.error(ns.put["not_connected"])
 
 
   def exit(self):
@@ -301,7 +296,7 @@ class App:
 
 
   def help(self):
-    Msg.help()
+    msg.help()
 
 
   def jump(self):
@@ -313,7 +308,7 @@ class App:
       if self.connected:
         self.env = envs["Remote"]
       else:
-        Msg.error(Ns.jump["not_connected"])
+        msg.error(ns.jump["not_connected"])
 
 
   def ls(self):
@@ -323,7 +318,7 @@ class App:
         try:
           self.ftp.retrlines("LIST")
         except:
-          Msg.error(Ns.ls["error"])
+          msg.error(ns.ls["error"])
     else:
       try:
         if os.path.exists(self.pathLocal):
@@ -334,7 +329,7 @@ class App:
         else:
           raise
       except:
-        Msg.error(Ns.ls["error"])
+        msg.error(ns.ls["error"])
 
 
   def mkdir(self):
@@ -349,32 +344,32 @@ class App:
           remoteDirPath = getNextPath(self.pathRemote, dirName)
           self.ftp.mkd(remoteDirPath)
     except:
-      Msg.error(Ns.mkdir["error"].format(dirName=dirName))
+      msg.error(ns.mkdir["error"].format(dirName=dirName))
 
 
   def rush(self):
     hostStr = getSingleActionParam(Act["Rush"], self.action)
-    loginStr = Ns.rush["login"]["user"]
-    passwdStr = Ns.rush["login"]["passwd"]
-    portSrt = Ns.rush["login"]["port"]
-    userInput = Interact.multiInput([loginStr, passwdStr, portSrt])
+    loginStr = ns.rush["login"]["user"]
+    passwdStr = ns.rush["login"]["passwd"]
+    portSrt = ns.rush["login"]["port"]
+    userInput = interact.multiInput([loginStr, passwdStr, portSrt])
     self.loginData = {
       "host": hostStr,
       "user": userInput[loginStr],
       "passwd": userInput[passwdStr],
       "port": userInput[portSrt] or settings["port"]
     }
-    Msg.suspend(Ns.rush["connecting"].format(host=self.loginData["host"]))
+    msg.suspend(ns.rush["connecting"].format(host=self.loginData["host"]))
     if self.login():
-      Msg.success(Ns.rush["connected"].format(host=self.loginData["host"]))
+      msg.success(ns.rush["connected"].format(host=self.loginData["host"]))
     else:
-      Msg.error(Ns.rush["connecting_error"].format(host=self.loginData["host"]))
+      msg.error(ns.rush["connecting_error"].format(host=self.loginData["host"]))
 
 
   def take(self):
     self.pingServer(message=False)
     if self.connected:
-      Msg.suspend(Ns.common["processing"])
+      msg.suspend(ns.common["processing"])
       override = False
       pathExists = False
       target = getSingleActionParam(Act["Take"], self.action)
@@ -383,22 +378,22 @@ class App:
       localTargetPath = getNextPath(self.pathLocal, targetName)
       if os.path.exists(localTargetPath):
         pathExists = True
-        confirmOverride = Interact.confirm(Ns.take["exists"].format(target=targetName))
+        confirmOverride = interact.confirm(ns.take["exists"].format(target=targetName))
         if confirmOverride:
           override = True
       try:
-        Msg.suspend(Ns.take["progress"])
+        msg.suspend(ns.take["progress"])
         if self.ftp.isDir(targetPath):
           currentLocalPath = self.pathLocal
           self.downloadTree(targetPath, pathExists, override)
           self.changeLocalPath(currentLocalPath)
         else:
           self.downloadFile(targetPath, pathExists, override)
-        Msg.success(Ns.take["success"])
+        msg.success(ns.take["success"])
       except:
-        Msg.error(Ns.take["transfer_error"])
+        msg.error(ns.take["transfer_error"])
     else:
-      Msg.error(Ns.take["not_connected"])
+      msg.error(ns.take["not_connected"])
 
 
   def whereAmI(self):
@@ -422,61 +417,58 @@ class App:
   def status(self):
     try:
       self.ftp.voidcmd("NOOP")
-      Msg.serverResponse(self.ftp.getwelcome())
-      Msg.success(Ns.status["connected_title"])
-      Msg.default(Ns.status["connected_data"].format(
+      msg.serverResponse(self.ftp.getwelcome())
+      msg.success(ns.status["connected_title"])
+      msg.default(ns.status["connected_data"].format(
         host=self.loginData["host"],
         user=self.loginData["user"],
         passwd=self.loginData["passwd"],
         port=self.loginData["port"]
       ))
     except:
-      Msg.error(Ns.status["disconnected_title"])
+      msg.error(ns.status["disconnected_title"])
       self.setStatusDisconnected()
-
-
-  #------------- Run -------------#
 
 
   def run(self):
     self.clear()
-    Msg.welcome()
+    msg.welcome()
     while True:
       try:
         inputPrompt = getInputPrompt(self.env)
         action = input(inputPrompt)
         self.action = self.processAction(action)
-        if Av.isExit(self.action):
+        if av.isExit(self.action):
           self.exit()
           break
-        elif Av.isClear(self.action):
+        elif av.isClear(self.action):
           self.clear()
-        elif Av.isHelp(self.action):
+        elif av.isHelp(self.action):
           self.help()
-        elif Av.isRush(self.action):
+        elif av.isRush(self.action):
           self.rush()
-        elif Av.isLs(self.action):
+        elif av.isLs(self.action):
           self.ls()
-        elif Av.isJump(self.action):
+        elif av.isJump(self.action):
           self.jump()
-        elif Av.isWhereAmI(self.action):
+        elif av.isWhereAmI(self.action):
           self.whereAmI()
-        elif Av.isWhoAmI(self.action):
+        elif av.isWhoAmI(self.action):
           self.whoAmI()
-        elif Av.isCd(self.action):
+        elif av.isCd(self.action):
           self.cd()
-        elif Av.isMkdir(self.action):
+        elif av.isMkdir(self.action):
           self.mkdir()
-        elif Av.isDelete(self.action):
+        elif av.isDelete(self.action):
           self.delete()
-        elif Av.isPut(self.action):
+        elif av.isPut(self.action):
           self.put()
-        elif Av.isTake(self.action):
+        elif av.isTake(self.action):
           self.take()
-        elif Av.isStatus(self.action):
+        elif av.isStatus(self.action):
           self.status()
         else:
-          Msg.info(Ns.common["command_not_found"])
+          msg.info(ns.common["command_not_found"])
       except:
-        Msg.error(Ns.common["unexpected_error"])
+        msg.error(ns.common["unexpected_error"])
         break

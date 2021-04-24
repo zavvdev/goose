@@ -3,14 +3,14 @@ from utils.styledText import styledText
 from constants.textStyles import textStyles
 from modules.Namespace import Namespace
 
-Ns = Namespace()
+ns = Namespace()
 
 class Interact:
   def confirm(self, question):
     q = question + "\n"
     yesAct = Act["Confirm"]["Yes"]
     yesShortAct = Act["Confirm"]["YesShort"]
-    confTip = Ns.common["confirm"]["tip"]
+    confTip = ns.common["confirm"]["tip"]
     conf = input(styledText(textStyles["Yellow"] + q + confTip))
     confLover = conf.lower()
     if confLover == yesAct or confLover == yesShortAct:
