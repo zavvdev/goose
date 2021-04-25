@@ -1,0 +1,9 @@
+{
+  "confirm": {
+    "yes": "yes",
+    "no": "no",
+    "short_yes": "y",
+    "short_no": "n",
+    "tip": "(Yes/No): "
+  }
+}

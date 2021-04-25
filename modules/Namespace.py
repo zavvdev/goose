@@ -18,6 +18,7 @@ from constants.nsAccessors import nsAccessors
 #   - clear (clear action namespaces)
 #   - ls (ls action namespaces)
 #   - status (status action namespaces)
+#   - interact (Interact module namespaces)
 
 class Namespace:
   def __init__(self):
@@ -32,6 +33,7 @@ class Namespace:
     self.clear = self.__getNamespace(nsAccessors["Clear"])
     self.ls = self.__getNamespace(nsAccessors["Ls"])
     self.status = self.__getNamespace(nsAccessors["Status"])
+    self.interact = self.__getNamespace(nsAccessors["Interact"])
 
   # ----------------------------------------------------
 

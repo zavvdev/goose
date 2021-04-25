@@ -3,7 +3,7 @@ from utils.styledText import styledText
 from constants.textStyles import textStyles
 from modules.Namespace import Namespace
 
-ns = Namespace()
+ns = Namespace().interact
 
 # Name: Interact
 # Desc: Provide opportunities for interactions with the application
@@ -21,12 +21,12 @@ class Interact:
 
   def confirm(self, question):
     q = question + "\n"
-    yesAct = Act["Confirm"]["Yes"]
-    yesShortAct = Act["Confirm"]["YesShort"]
-    confTip = ns.common["confirm"]["tip"]
+    yes = ns["confirm"]["yes"]
+    yesShort = ns["confirm"]["short_yes"]
+    confTip = ns["confirm"]["tip"]
     conf = input(styledText(textStyles["Yellow"] + q + confTip))
     confLover = conf.lower()
-    if confLover == yesAct or confLover == yesShortAct:
+    if confLover == yes or confLover == yesShort:
       return True
     return False
 

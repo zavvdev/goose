@@ -10,4 +10,5 @@ nsAccessors = {
   "Clear": "clear",
   "Ls": "ls",
   "Status": "status",
+  "Interact": "interact"
 }

@@ -15,11 +15,5 @@ Actions = {
   "Delete": "del",
   "Put": "put",
   "Take": "take",
-  "Status": "status",
-  "Confirm": {
-    "Yes": "yes",
-    "No": "no",
-    "YesShort": "y",
-    "NoShort": "n",
-  }
+  "Status": "status"
 }
