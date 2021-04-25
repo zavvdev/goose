@@ -1,4 +1,6 @@
 settings = {
-  "timeout": 20,
-  "port": 21
+  "ftp": {
+    "timeout": 20,
+    "port": 21
+  }
 }

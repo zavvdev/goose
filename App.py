@@ -92,7 +92,7 @@ class App:
         loginData["user"],
         loginData["passwd"],
         port=loginData["port"],
-        timeout=settings["timeout"]
+        timeout=settings["ftp"]["timeout"]
       )
       self.ftp.login(user=loginData["user"], passwd=loginData["passwd"])
       self.connected = True
@@ -209,7 +209,7 @@ class App:
       "host": hostStr,
       "user": userInput[loginStr],
       "passwd": userInput[passwdStr],
-      "port": userInput[portSrt] or settings["port"]
+      "port": userInput[portSrt] or settings["ftp"]["port"]
     }
     msg.suspend(ns.rush["connecting"].format(host=self.loginData["host"]))
     if self.login():
