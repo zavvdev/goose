@@ -134,15 +134,6 @@ class App:
       raise
 
 
-  def uploadFile(self, targetPath, pathExists, override):
-    _, fileName = os.path.split(targetPath)
-    fileNameToUpload = fileName
-    if not override and pathExists:
-      timestamp = getTimestamp()
-      fileNameToUpload = "{time}_{file}".format(time=timestamp, file=fileName)
-    self.ftp.put(targetPath, fileNameToUpload)
-
-
   def uploadTree(self, targetPath, pathExists, override):
     _, dirName = os.path.split(targetPath)
     dirNameToCreate = dirName
@@ -165,16 +156,6 @@ class App:
         self.ftp.put(elPath, el)
     backPath = getNextPath(self.pathRemote, "..")
     self.changeRemotePath(backPath)
-
-
-  def downloadFile(self, targetPath, pathExists, override):
-    _, fileName = os.path.split(targetPath)
-    fileNameToCreate = fileName
-    if not override and pathExists:
-      timestamp = getTimestamp()
-      fileNameToCreate = "{time}_{file}".format(time=timestamp, file=fileName)
-    localFileName = getNextPath(self.pathLocal, fileNameToCreate)
-    self.ftp.get(targetPath, localFileName)
 
 
   def downloadTree(self, targetPath, pathExists, override):
@@ -262,7 +243,7 @@ class App:
         try:
           msg.suspend(ns.put["progress"])
           if os.path.isfile(targetPath):
-            self.uploadFile(targetPath, pathExists, override)
+            self.ftp.putFile(targetPath, pathExists, override)
           elif os.path.isdir(targetPath):
             currentRemotePath = self.pathRemote
             self.uploadTree(targetPath, pathExists, override)
@@ -377,7 +358,7 @@ class App:
           self.downloadTree(targetPath, pathExists, override)
           self.changeLocalPath(currentLocalPath)
         else:
-          self.downloadFile(targetPath, pathExists, override)
+          self.ftp.takeFile(targetPath, self.pathLocal, pathExists, override)
         msg.success(ns.take["success"])
       except:
         msg.error(ns.take["transfer_error"])

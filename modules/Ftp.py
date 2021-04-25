@@ -1,6 +1,7 @@
 import os
 from ftpretty import ftpretty as FTP
 from utils.getNextPath import getNextPath
+from utils.getTimestamp import getTimestamp
 
 class Ftp(FTP):
   def exists(self, target, currentPath):
@@ -35,3 +36,20 @@ class Ftp(FTP):
       else:
         self.delete(preparedTargetPath)
     self.rmd(path)
+
+  def putFile(self, targetPath, exists=False, overwrite=True):
+    _, fileName = os.path.split(targetPath)
+    fileNameToUpload = fileName
+    if not overwrite and exists:
+      timestamp = getTimestamp()
+      fileNameToUpload = "{time}_{file}".format(time=timestamp, file=fileName)
+    self.put(targetPath, fileNameToUpload)
+
+  def takeFile(self, targetPath, saveToPath, exists=False, overwrite=True):
+    _, fileName = os.path.split(targetPath)
+    fileNameToCreate = fileName
+    if not overwrite and exists:
+      timestamp = getTimestamp()
+      fileNameToCreate = "{time}_{file}".format(time=timestamp, file=fileName)
+    localFileName = getNextPath(saveToPath, fileNameToCreate)
+    self.get(targetPath, localFileName)
