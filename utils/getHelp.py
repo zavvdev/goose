@@ -1,6 +1,11 @@
-from constants.actions import Actions as Act
+from constants.actions import actions as act
 from utils.styledText import styledText
 from constants.textStyles import textStyles
+
+# Name: getHelp
+# Desc: Format help message
+# Args: void
+# Return: string
 
 def getHelp():
   actStyle = textStyles["Bold"] + textStyles["White"]
@@ -8,23 +13,23 @@ def getHelp():
   note1 = styledText(noteStyle + "You can provide relative or absolute path for commands that uses it.")
   note2 = styledText(noteStyle + "You dont need to use double or single quotes to create/delete/upload/download file or directory with spaces in name.")
   note3 = styledText(noteStyle + "Put and Take actions move files to where you are at the moment. Example: \"put my-dir\" will upload my-dir folder in place where you in the remote server now.\n")
-  rush = styledText(actStyle + Act["Rush"])
-  put = styledText(actStyle + Act["Put"])
-  take = styledText(actStyle + Act["Take"])
-  jump = styledText(actStyle + Act["Jump"])
-  delete = styledText(actStyle + Act["Delete"])
-  mkdir = styledText(actStyle + Act["Mkdir"])
-  cd = styledText(actStyle + Act["Cd"])
-  clear = styledText(actStyle + Act["Clear"])
-  ls = styledText(actStyle + Act["Ls"])
-  whereami = styledText(actStyle + Act["WhereAmI"])
-  whereamiShort = styledText(actStyle + Act["WhereAmIShort"])
-  whoami = styledText(actStyle + Act["WhoAmI"])
-  helpAct = styledText(actStyle + Act["Help"])
-  helpActShort = styledText(actStyle + Act["HelpShort"])
-  exit = styledText(actStyle + Act["Exit"])
-  exitShort = styledText(actStyle + Act["ExitShort"])
-  status = styledText(actStyle + Act["Status"])
+  rush = styledText(actStyle + act["Rush"])
+  put = styledText(actStyle + act["Put"])
+  take = styledText(actStyle + act["Take"])
+  jump = styledText(actStyle + act["Jump"])
+  delete = styledText(actStyle + act["Delete"])
+  mkdir = styledText(actStyle + act["Mkdir"])
+  cd = styledText(actStyle + act["Cd"])
+  clear = styledText(actStyle + act["Clear"])
+  ls = styledText(actStyle + act["Ls"])
+  whereami = styledText(actStyle + act["WhereAmI"])
+  whereamiShort = styledText(actStyle + act["WhereAmIShort"])
+  whoami = styledText(actStyle + act["WhoAmI"])
+  helpAct = styledText(actStyle + act["Help"])
+  helpActShort = styledText(actStyle + act["HelpShort"])
+  exit = styledText(actStyle + act["Exit"])
+  exitShort = styledText(actStyle + act["ExitShort"])
+  status = styledText(actStyle + act["Status"])
   return f"""
     {note1}
     {note2}

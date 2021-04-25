@@ -10,7 +10,7 @@ from modules.Namespace import Namespace
 
 from constants.settings import settings
 from constants.environments import environments as envs
-from constants.actions import Actions as Act
+from constants.actions import actions as act
 
 from utils.execCmd import execCmd
 from utils.getNextPath import getNextPath
@@ -200,7 +200,7 @@ class App:
   # Return: void
 
   def rush(self):
-    hostStr = getSingleActionParam(Act["Rush"], self.action)
+    hostStr = getSingleActionParam(act["Rush"], self.action)
     loginStr = ns.rush["login"]["user"]
     passwdStr = ns.rush["login"]["passwd"]
     portSrt = ns.rush["login"]["port"]
@@ -230,7 +230,7 @@ class App:
       msg.suspend(ns.common["processing"])
       overwrite = False
       pathExists = False
-      target = getSingleActionParam(Act["Put"], self.action)
+      target = getSingleActionParam(act["Put"], self.action)
       targetPath = getNextPath(self.pathLocal, target)
       _, targetName = os.path.split(target)
       if os.path.exists(targetPath):
@@ -269,7 +269,7 @@ class App:
       msg.suspend(ns.common["processing"])
       overwrite = False
       pathExists = False
-      target = getSingleActionParam(Act["Take"], self.action)
+      target = getSingleActionParam(act["Take"], self.action)
       targetPath = getNextPath(self.pathRemote, target)
       _, targetName = os.path.split(targetPath)
       localTargetPath = getNextPath(self.pathLocal, targetName)
@@ -298,7 +298,7 @@ class App:
   # Return: void
 
   def jump(self):
-    jumpTo = getSingleActionParam(Act["Jump"], self.action)
+    jumpTo = getSingleActionParam(act["Jump"], self.action)
     if jumpTo == envs["Local"]:
       self.env = envs["Local"]
     else:
@@ -316,7 +316,7 @@ class App:
   # Return: void
 
   def mkdir(self):
-    dirName = getSingleActionParam(Act["Mkdir"], self.action)
+    dirName = getSingleActionParam(act["Mkdir"], self.action)
     try:
       if self.env == envs["Local"]:
         localDirPath = getNextPath(self.pathLocal, dirName)
@@ -337,7 +337,7 @@ class App:
   # Return: void
 
   def delete(self):
-    target = getSingleActionParam(Act["Delete"], self.action)
+    target = getSingleActionParam(act["Delete"], self.action)
     msg.suspend(ns.common["processing"])
     try:
       if self.env == envs["Local"]:
@@ -357,7 +357,7 @@ class App:
   # Return: void
 
   def cd(self):
-    dest = getSingleActionParam(Act["Cd"], self.action)
+    dest = getSingleActionParam(act["Cd"], self.action)
     if self.env == envs["Local"]:
       nextLocalPath = getNextPath(self.pathLocal, dest)
       if os.path.exists(nextLocalPath):

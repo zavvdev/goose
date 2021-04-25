@@ -1,4 +1,4 @@
-Actions = {
+actions = {
   "Exit": "exit",
   "ExitShort": "x",
   "Help": "help",

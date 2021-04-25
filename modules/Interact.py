@@ -1,4 +1,3 @@
-from constants.actions import Actions as Act
 from utils.styledText import styledText
 from constants.textStyles import textStyles
 from modules.Namespace import Namespace

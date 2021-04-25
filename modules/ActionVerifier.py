@@ -1,4 +1,4 @@
-from constants.actions import Actions as Act
+from constants.actions import actions as act
 from constants.environments import environments as envs
 
 # Name: ActionVerifier
@@ -42,7 +42,7 @@ class ActionVerifier:
   def isCd(self, action):
     splited = self.__splitAction(action)
     if len(splited) >= 2:
-      return splited[0] == Act["Cd"]
+      return splited[0] == act["Cd"]
     return False
 
   # ----------------------------------------------------
@@ -53,7 +53,7 @@ class ActionVerifier:
   # Return: boolean
 
   def isClear(self, action):
-    return action == Act["Clear"]
+    return action == act["Clear"]
 
   # ----------------------------------------------------
 
@@ -65,7 +65,7 @@ class ActionVerifier:
   def isDelete(self, action):
     splited = self.__splitAction(action)
     if len(splited) >= 2:
-      return splited[0] == Act["Delete"]
+      return splited[0] == act["Delete"]
     return False
 
   # ----------------------------------------------------
@@ -78,7 +78,7 @@ class ActionVerifier:
   def isPut(self, action):
     splited = self.__splitAction(action)
     if len(splited) >= 2:
-      return splited[0] == Act["Put"]
+      return splited[0] == act["Put"]
     return False
 
   # ----------------------------------------------------
@@ -89,7 +89,7 @@ class ActionVerifier:
   # Return: boolean
 
   def isExit(self, action):
-    return action == Act["Exit"] or action == Act["ExitShort"]
+    return action == act["Exit"] or action == act["ExitShort"]
 
   # ----------------------------------------------------
 
@@ -99,7 +99,7 @@ class ActionVerifier:
   # Return: boolean
 
   def isHelp(self, action):
-    return action == Act["Help"] or action == Act["HelpShort"]
+    return action == act["Help"] or action == act["HelpShort"]
 
   # ----------------------------------------------------
 
@@ -111,10 +111,10 @@ class ActionVerifier:
   def isJump(self, action):
     splited = self.__splitAction(action)
     if len(splited) == 2:
-      act = splited[0] == Act["Jump"]
+      isAct = splited[0] == act["Jump"]
       local = splited[1] == envs["Local"]
       remote = splited[1] == envs["Remote"]
-      return act and (local or remote)
+      return isAct and (local or remote)
     return False
 
   # ----------------------------------------------------
@@ -125,7 +125,7 @@ class ActionVerifier:
   # Return: boolean
 
   def isLs(self, action):
-    return action == Act["Ls"]
+    return action == act["Ls"]
   
   # ----------------------------------------------------
 
@@ -137,7 +137,7 @@ class ActionVerifier:
   def isMkdir(self, action):
     splited = self.__splitAction(action)
     if len(splited) >= 2:
-      return splited[0] == Act["Mkdir"]
+      return splited[0] == act["Mkdir"]
     return False
 
   # ----------------------------------------------------
@@ -150,7 +150,7 @@ class ActionVerifier:
   def isRush(self, action):
     splited = self.__splitAction(action)
     if len(splited) == 2:
-      return splited[0] == Act["Rush"]
+      return splited[0] == act["Rush"]
     return False
 
   # ----------------------------------------------------
@@ -161,7 +161,7 @@ class ActionVerifier:
   # Return: boolean
 
   def isStatus(self, action):
-    return action == Act["Status"]
+    return action == act["Status"]
 
   # ----------------------------------------------------
 
@@ -173,7 +173,7 @@ class ActionVerifier:
   def isTake(self, action):
     splited = self.__splitAction(action)
     if len(splited) >= 2:
-      return splited[0] == Act["Take"]
+      return splited[0] == act["Take"]
     return False
 
   # ----------------------------------------------------
@@ -184,8 +184,8 @@ class ActionVerifier:
   # Return: boolean
 
   def isWhereAmI(self, action):
-    isAct = action == Act["WhereAmI"]
-    isActShort = action == Act["WhereAmIShort"]
+    isAct = action == act["WhereAmI"]
+    isActShort = action == act["WhereAmIShort"]
     return isAct or isActShort
 
   # ----------------------------------------------------
@@ -196,6 +196,6 @@ class ActionVerifier:
   # Return: boolean
 
   def isWhoAmI(self, action):
-    return action == Act["WhoAmI"]
+    return action == act["WhoAmI"]
 
   # ----------------------------------------------------
