@@ -16,7 +16,6 @@ from utils.execCmd import execCmd
 from utils.getNextPath import getNextPath
 from utils.trimSpaces import trimSpaces
 from utils.getSingleActionParam import getSingleActionParam
-from utils.getTimestamp import getTimestamp
 from utils.getInputPrompt import getInputPrompt
 
 av = ActionVerifier()
@@ -35,9 +34,27 @@ class App:
     self.pathRemote = ""
 
 
+  # # # # # # # # # # # #
+  #                     #
+  #        Utils        #
+  #                     #
+  # # # # # # # # # # # #
+
+
+  # Name: processAction
+  # Desc: Process user input
+  # Args: action (string)
+  # Return: String with only single spaces
+
   def processAction(self, action):
     return trimSpaces(action)
 
+  # ----------------------------------------------------
+
+  # Name: pingServer
+  # Desc: Check connection status
+  # Args: message (boolean)
+  # Return: void
 
   def pingServer(self, message=True):
     try:
@@ -47,6 +64,12 @@ class App:
         msg.error(ns.common["connection_lost"])
       self.setStatusDisconnected()
 
+  # ----------------------------------------------------
+
+  # Name: setStatusDisconnected
+  # Desc: Set application status to disconnected state
+  # Args: void
+  # Return: void
 
   def setStatusDisconnected(self):
     self.ftp = None
@@ -54,6 +77,12 @@ class App:
     self.env = envs["Local"]
     self.pathRemote = ""
 
+  # ----------------------------------------------------
+
+  # Name: login
+  # Desc: Establish connection with remote ftp-server
+  # Args: void
+  # Return: boolean
 
   def login(self):
     loginData = self.loginData
@@ -76,17 +105,35 @@ class App:
       msg.serverResponse(e)
       return False
 
+  # ----------------------------------------------------
+
+  # Name: changeLocalPath
+  # Desc: Change local file system path 
+  # Args: nextPath (string)
+  # Return: void
 
   def changeLocalPath(self, nextPath):
     os.chdir(nextPath)
     self.pathLocal = nextPath
 
-  
+  # ----------------------------------------------------
+
+  # Name: changeRemotePath
+  # Desc: Change remote file system path 
+  # Args: nextPath (string)
+  # Return: void
+
   def changeRemotePath(self, nextPath):
     self.ftp.cwd(nextPath)
     self.pathRemote = nextPath 
 
-  
+  # ----------------------------------------------------
+
+  # Name: deleteLocal
+  # Desc: Delete local file or folder
+  # Args: target (string)
+  # Return: void
+
   def deleteLocal(self, target):
     _, targetName = os.path.split(target)
     suspendText = ns.delete["deleting"].format(target=targetName)
@@ -110,6 +157,12 @@ class App:
     else:
       raise
 
+  # ----------------------------------------------------
+
+  # Name: deleteRemote
+  # Desc: Delete remote file or folder
+  # Args: target (string)
+  # Return: void
 
   def deleteRemote(self, target):
     _, targetName = os.path.split(target)
@@ -133,6 +186,18 @@ class App:
     else:
       raise
 
+  
+  # # # # # # # # # # # # #
+  #                       #
+  #        Actions        #
+  #                       #
+  # # # # # # # # # # # # #
+
+
+  # Name: rush
+  # Desc: Connect to remote ftp-server
+  # Args: void
+  # Return: void
 
   def rush(self):
     hostStr = getSingleActionParam(Act["Rush"], self.action)
@@ -152,6 +217,12 @@ class App:
     else:
       msg.error(ns.rush["connecting_error"].format(host=self.loginData["host"]))
 
+  # ----------------------------------------------------
+
+  # Name: put
+  # Desc: Upload data to remote ftp-server
+  # Args: void
+  # Return: void
 
   def put(self):
     self.pingServer(message=False)
@@ -185,7 +256,13 @@ class App:
     else:
       msg.error(ns.common["no_connection"])
 
-  
+  # ----------------------------------------------------
+
+  # Name: take
+  # Desc: Download data from remote ftp-server
+  # Args: void
+  # Return: void
+
   def take(self):
     self.pingServer(message=False)
     if self.connected:
@@ -213,6 +290,71 @@ class App:
     else:
       msg.error(ns.take["not_connected"])
 
+  # ----------------------------------------------------
+
+  # Name: jump
+  # Desc: Change current working environment
+  # Args: void
+  # Return: void
+
+  def jump(self):
+    jumpTo = getSingleActionParam(Act["Jump"], self.action)
+    if jumpTo == envs["Local"]:
+      self.env = envs["Local"]
+    else:
+      self.pingServer(message=False)
+      if self.connected:
+        self.env = envs["Remote"]
+      else:
+        msg.error(ns.jump["not_connected"])
+
+  # ----------------------------------------------------
+
+  # Name: mkdir
+  # Desc: Create new local or remote directory
+  # Args: void
+  # Return: void
+
+  def mkdir(self):
+    dirName = getSingleActionParam(Act["Mkdir"], self.action)
+    try:
+      if self.env == envs["Local"]:
+        localDirPath = getNextPath(self.pathLocal, dirName)
+        os.mkdir(localDirPath)
+      else:
+        self.pingServer()
+        if self.connected:
+          remoteDirPath = getNextPath(self.pathRemote, dirName)
+          self.ftp.mkd(remoteDirPath)
+    except:
+      msg.error(ns.mkdir["error"].format(dirName=dirName))
+
+  # ----------------------------------------------------
+
+  # Name: delete
+  # Desc: Delete local or remote file/directory
+  # Args: void
+  # Return: void
+
+  def delete(self):
+    target = getSingleActionParam(Act["Delete"], self.action)
+    msg.suspend(ns.common["processing"])
+    try:
+      if self.env == envs["Local"]:
+        self.deleteLocal(target)
+      else:
+        self.pingServer()
+        if self.connected:
+          self.deleteRemote(target)
+    except:
+      msg.error(ns.delete["error"].format(target=target)) 
+
+  # ----------------------------------------------------
+
+  # Name: cd
+  # Desc: Change local/remote directory
+  # Args: void
+  # Return: void
 
   def cd(self):
     dest = getSingleActionParam(Act["Cd"], self.action)
@@ -231,50 +373,12 @@ class App:
         except:
           msg.error(ns.cd["error"].format(dest=nextRemotePath))
 
+  # ----------------------------------------------------
 
-  def clear(self):
-    clearResult = execCmd("clear")
-    if clearResult:
-      print(clearResult)
-    else:
-      msg.error(ns.clear["error"])
-
-
-  def delete(self):
-    target = getSingleActionParam(Act["Delete"], self.action)
-    msg.suspend(ns.common["processing"])
-    try:
-      if self.env == envs["Local"]:
-        self.deleteLocal(target)
-      else:
-        self.pingServer()
-        if self.connected:
-          self.deleteRemote(target)
-    except:
-      msg.error(ns.delete["error"].format(target=target))   
-
-
-  def exit(self):
-    self.pingServer(message=False)
-    if self.connected and self.ftp:
-      self.ftp.quit()
-
-
-  def help(self):
-    msg.help()
-
-
-  def jump(self):
-    jumpTo = getSingleActionParam(Act["Jump"], self.action)
-    if jumpTo == envs["Local"]:
-      self.env = envs["Local"]
-    else:
-      self.pingServer(message=False)
-      if self.connected:
-        self.env = envs["Remote"]
-      else:
-        msg.error(ns.jump["not_connected"])
-
+  # Name: ls
+  # Desc: Print list of data in current local/remote directory 
+  # Args: void
+  # Return: void
 
   def ls(self):
     if self.env == envs["Remote"]:
@@ -296,39 +400,12 @@ class App:
       except:
         msg.error(ns.ls["error"])
 
+  # ----------------------------------------------------
 
-  def mkdir(self):
-    dirName = getSingleActionParam(Act["Mkdir"], self.action)
-    try:
-      if self.env == envs["Local"]:
-        localDirPath = getNextPath(self.pathLocal, dirName)
-        os.mkdir(localDirPath)
-      else:
-        self.pingServer()
-        if self.connected:
-          remoteDirPath = getNextPath(self.pathRemote, dirName)
-          self.ftp.mkd(remoteDirPath)
-    except:
-      msg.error(ns.mkdir["error"].format(dirName=dirName))
-
-
-  def whereAmI(self):
-    if self.env == envs["Local"]:
-      msg.default(self.pathLocal)
-    else:
-      self.pingServer()
-      if self.connected:
-        msg.default(self.pathRemote)
-
-
-  def whoAmI(self):
-    if self.env == envs["Local"]:
-      msg.default(execCmd("whoami"))
-    else:
-      self.pingServer()
-      if self.connected:
-        msg.default(self.loginData["user"])
-
+  # Name: status
+  # Desc: Print status of connection
+  # Args: void
+  # Return: void
 
   def status(self):
     try:
@@ -345,6 +422,78 @@ class App:
       msg.error(ns.status["disconnected_title"])
       self.setStatusDisconnected()
 
+  # ----------------------------------------------------
+
+  # Name: clear
+  # Desc: Clear previous terminal inputs
+  # Args: void
+  # Return: void
+
+  def clear(self):
+    clearResult = execCmd("clear")
+    if clearResult:
+      print(clearResult)
+    else:
+      msg.error(ns.clear["error"])  
+
+  # ----------------------------------------------------
+
+  # Name: whereAmI
+  # Desc: Print current local/remote file system path
+  # Args: void
+  # Return: void
+
+  def whereAmI(self):
+    if self.env == envs["Local"]:
+      msg.default(self.pathLocal)
+    else:
+      self.pingServer()
+      if self.connected:
+        msg.default(self.pathRemote)
+
+  # ----------------------------------------------------
+
+  # Name: whoAmI
+  # Desc: Print current local/remote username
+  # Args: void
+  # Return: void
+
+  def whoAmI(self):
+    if self.env == envs["Local"]:
+      msg.default(execCmd("whoami"))
+    else:
+      self.pingServer()
+      if self.connected:
+        msg.default(self.loginData["user"])
+
+  # ----------------------------------------------------
+
+  # Name: exit
+  # Desc: Terminate application
+  # Args: void
+  # Return: void
+
+  def exit(self):
+    self.pingServer(message=False)
+    if self.connected and self.ftp:
+      self.ftp.quit()
+
+  # ----------------------------------------------------
+
+  # Name: help
+  # Desc: Print help message
+  # Args: void
+  # Return: void
+
+  def help(self):
+    msg.help()
+
+  # ----------------------------------------------------
+
+  # Name: run
+  # Desc: Start application. Listen for actions
+  # Args: void
+  # Return: void
 
   def run(self):
     self.clear()
@@ -388,3 +537,5 @@ class App:
       except:
         msg.error(ns.common["unexpected_error"])
         break
+  
+  # ----------------------------------------------------

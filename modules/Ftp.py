@@ -3,13 +3,40 @@ from ftpretty import ftpretty as FTP
 from utils.getNextPath import getNextPath
 from utils.getTimestamp import getTimestamp
 
+# Name: Ftp
+# Desc: Provide additional features for ftp.
+#       Expand capabilities of inherited module
+# Inherits: ftpretty
+# Methods: 
+#   - exists (check if a file exists)
+#   - isDir (check if a file is a directory)
+#   - isFile (check if a file is a file)
+#   - rmTree (delete a file tree)
+#   - putFile (upload a single file to the server)
+#   - takeFile (download a single file from the server)
+#   - putTree (upload a file tree to the server)
+#   - takeTree (download a file tree from the server)
+
 class Ftp(FTP):
+
+  # Name: exists
+  # Desc: Check if a file exists
+  # Args: target (string), currentPath (string)
+  # Return: boolean
+
   def exists(self, target, currentPath):
     curDirList = self.list(currentPath, extra=True)
     for el in curDirList:
       if el["name"] == target:
         return True
     return False
+    
+  # ----------------------------------------------------
+
+  # Name: isDir
+  # Desc: Check if a file is a directory
+  # Args: target (string)
+  # Return: boolean
 
   def isDir(self, target):
     path, targetName = os.path.split(target)
@@ -19,6 +46,13 @@ class Ftp(FTP):
         return True
     return False
 
+  # ----------------------------------------------------
+
+  # Name: isFile
+  # Desc: Check if a file is a file
+  # Args: target (string)
+  # Return: boolean
+
   def isFile(self, target):
     path, targetName = os.path.split(target)
     curDirList = self.list(path, extra=True)
@@ -26,6 +60,13 @@ class Ftp(FTP):
       if el["name"] == targetName and el["directory"] != "d":
         return True
     return False
+
+  # ----------------------------------------------------
+
+  # Name: rmTree
+  # Desc: Delete a file tree
+  # Args: path (string)
+  # Return: void
 
   def rmTree(self, path):
     pathList = self.list(path, extra=True)
@@ -37,6 +78,15 @@ class Ftp(FTP):
         self.delete(preparedTargetPath)
     self.rmd(path)
 
+  # ----------------------------------------------------
+
+  # Name: putFile
+  # Desc: Upload a single file to the server
+  # Args: targetPath (string),
+  #       exists (boolean=False),
+  #       overwrite (boolean=True)
+  # Return: void
+
   def putFile(self, targetPath, exists=False, overwrite=True):
     _, fileName = os.path.split(targetPath)
     fileNameToUpload = fileName
@@ -44,6 +94,15 @@ class Ftp(FTP):
       timestamp = getTimestamp()
       fileNameToUpload = "{time}_{file}".format(time=timestamp, file=fileName)
     self.put(targetPath, fileNameToUpload)
+
+  # ----------------------------------------------------
+
+  # Name: takeFile
+  # Desc: Download a single file from the server
+  # Args: targetPath (string),
+  #       exists (boolean=False),
+  #       overwrite (boolean=True)
+  # Return: void
 
   def takeFile(self, targetPath, saveToPath, exists=False, overwrite=True):
     _, fileName = os.path.split(targetPath)
@@ -53,6 +112,15 @@ class Ftp(FTP):
       fileNameToCreate = "{time}_{file}".format(time=timestamp, file=fileName)
     localFileName = getNextPath(saveToPath, fileNameToCreate)
     self.get(targetPath, localFileName)
+
+  # ----------------------------------------------------
+
+  # Name: putTree
+  # Desc: Upload a file tree to the server
+  # Args: targetPath (string),
+  #       exists (boolean=False),
+  #       overwrite (boolean=True)
+  # Return: void
 
   def putTree(self, targetPath, exists=False, overwrite=True):
     _, dirName = os.path.split(targetPath)
@@ -76,6 +144,15 @@ class Ftp(FTP):
         self.put(elPath, el)
     backPath = getNextPath(self.pwd(), "..")
     self.cwd(backPath)
+
+  # ----------------------------------------------------
+
+  # Name: takeTree
+  # Desc: Download a file tree from the server
+  # Args: targetPath (string),
+  #       exists (boolean=False),
+  #       overwrite (boolean=True)
+  # Return: void
 
   def takeTree(self, targetPath, exists=False, overwrite=True):
     _, dirName = os.path.split(targetPath)
@@ -101,3 +178,5 @@ class Ftp(FTP):
         self.get(elPath, localFileName)  
     backPath = getNextPath(os.getcwd(), "..")
     os.chdir(backPath)
+
+  # ----------------------------------------------------
