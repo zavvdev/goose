@@ -85,17 +85,6 @@ class App:
   def changeRemotePath(self, nextPath):
     self.ftp.cwd(nextPath)
     self.pathRemote = nextPath 
-  
-
-  def rmFtpTree(self, path):
-    pathList = self.ftp.list(path, extra=True)
-    for target in pathList:
-      preparedTargetPath = getNextPath(path, target["name"])
-      if target["directory"] == "d":
-        self.rmFtpTree(preparedTargetPath)
-      else:
-        self.ftp.delete(preparedTargetPath)
-    self.ftp.rmd(path)
 
   
   def deleteLocal(self, target):
@@ -132,7 +121,7 @@ class App:
       confirmDelDir = interact.confirm(confirmMsg)
       if confirmDelDir:
         msg.suspend(suspendText)
-        self.rmFtpTree(remoteTargetPath)
+        self.ftp.rmTree(remoteTargetPath)
         msg.success(successText)
     elif self.ftp.isFile(remoteTargetPath):
       confirmMsg = ns.delete["delete_file"].format(fileName=targetName)
