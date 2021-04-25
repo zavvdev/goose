@@ -134,30 +134,6 @@ class App:
       raise
 
 
-  def uploadTree(self, targetPath, pathExists, override):
-    _, dirName = os.path.split(targetPath)
-    dirNameToCreate = dirName
-    if not override and pathExists:
-      timestamp = getTimestamp()
-      dirNameToCreate = "{time}_{dir}".format(time=timestamp, dir=dirName)
-    remoteDirPath = getNextPath(self.pathRemote, dirNameToCreate)
-    if not pathExists or (pathExists and not override):
-      self.ftp.mkd(remoteDirPath)
-    self.changeRemotePath(remoteDirPath)
-    for el in os.listdir(targetPath):
-      elPath = getNextPath(targetPath, el)
-      remoteElPath = getNextPath(self.pathRemote, el)
-      if os.path.isdir(elPath):
-        innerExists = False
-        if self.ftp.exists(el, self.pathRemote):
-          innerExists = True
-        self.uploadTree(elPath, innerExists, True)
-      else:
-        self.ftp.put(elPath, el)
-    backPath = getNextPath(self.pathRemote, "..")
-    self.changeRemotePath(backPath)
-
-
   def downloadTree(self, targetPath, pathExists, override):
     _, dirName = os.path.split(targetPath)
     dirNameToCreate = dirName
@@ -182,6 +158,88 @@ class App:
         self.ftp.get(elPath, localFileName)  
     backPath = getNextPath(self.pathLocal, "..")
     self.changeLocalPath(backPath)
+
+
+  def rush(self):
+    hostStr = getSingleActionParam(Act["Rush"], self.action)
+    loginStr = ns.rush["login"]["user"]
+    passwdStr = ns.rush["login"]["passwd"]
+    portSrt = ns.rush["login"]["port"]
+    userInput = interact.multiInput([loginStr, passwdStr, portSrt])
+    self.loginData = {
+      "host": hostStr,
+      "user": userInput[loginStr],
+      "passwd": userInput[passwdStr],
+      "port": userInput[portSrt] or settings["port"]
+    }
+    msg.suspend(ns.rush["connecting"].format(host=self.loginData["host"]))
+    if self.login():
+      msg.success(ns.rush["connected"].format(host=self.loginData["host"]))
+    else:
+      msg.error(ns.rush["connecting_error"].format(host=self.loginData["host"]))
+
+
+  def put(self):
+    self.pingServer(message=False)
+    if self.connected:
+      msg.suspend(ns.common["processing"])
+      override = False
+      pathExists = False
+      target = getSingleActionParam(Act["Put"], self.action)
+      targetPath = getNextPath(self.pathLocal, target)
+      _, targetName = os.path.split(target)
+      if os.path.exists(targetPath):
+        if self.ftp.exists(targetName, self.pathRemote):
+          pathExists = True
+          existsMsg = ns.put["exists"].format(target=targetName)
+          confirmOverride = interact.confirm(existsMsg)
+          if confirmOverride:
+            override = True
+        try:
+          msg.suspend(ns.put["progress"])
+          if os.path.isfile(targetPath):
+            self.ftp.putFile(targetPath, pathExists, override)
+          elif os.path.isdir(targetPath):
+            self.ftp.putTree(targetPath, pathExists, override)
+          else:
+            raise
+          msg.success(ns.put["success"])
+        except:
+          msg.error(ns.common["transfer_error"])
+      else:
+        msg.error(ns.common["invalid_path"])
+    else:
+      msg.error(ns.common["no_connection"])
+
+  
+  def take(self):
+    self.pingServer(message=False)
+    if self.connected:
+      msg.suspend(ns.common["processing"])
+      override = False
+      pathExists = False
+      target = getSingleActionParam(Act["Take"], self.action)
+      targetPath = getNextPath(self.pathRemote, target)
+      _, targetName = os.path.split(targetPath)
+      localTargetPath = getNextPath(self.pathLocal, targetName)
+      if os.path.exists(localTargetPath):
+        pathExists = True
+        confirmOverride = interact.confirm(ns.take["exists"].format(target=targetName))
+        if confirmOverride:
+          override = True
+      try:
+        msg.suspend(ns.take["progress"])
+        if self.ftp.isDir(targetPath):
+          currentLocalPath = self.pathLocal
+          self.downloadTree(targetPath, pathExists, override)
+          self.changeLocalPath(currentLocalPath)
+        else:
+          self.ftp.takeFile(targetPath, self.pathLocal, pathExists, override)
+        msg.success(ns.take["success"])
+      except:
+        msg.error(ns.take["transfer_error"])
+    else:
+      msg.error(ns.take["not_connected"])
 
 
   def cd(self):
@@ -222,41 +280,6 @@ class App:
           self.deleteRemote(target)
     except:
       msg.error(ns.delete["error"].format(target=target))   
-
-
-  def put(self):
-    self.pingServer(message=False)
-    if self.connected:
-      msg.suspend(ns.common["processing"])
-      override = False
-      pathExists = False
-      target = getSingleActionParam(Act["Put"], self.action)
-      targetPath = getNextPath(self.pathLocal, target)
-      _, targetName = os.path.split(target)
-      if os.path.exists(targetPath):
-        if self.ftp.exists(targetName, self.pathRemote):
-          pathExists = True
-          existsMsg = ns.put["exists"].format(target=targetName)
-          confirmOverride = interact.confirm(existsMsg)
-          if confirmOverride:
-            override = True
-        try:
-          msg.suspend(ns.put["progress"])
-          if os.path.isfile(targetPath):
-            self.ftp.putFile(targetPath, pathExists, override)
-          elif os.path.isdir(targetPath):
-            currentRemotePath = self.pathRemote
-            self.uploadTree(targetPath, pathExists, override)
-            self.changeRemotePath(currentRemotePath)
-          else:
-            raise Exception("Unable to define local path")
-          msg.success(ns.put["success"])
-        except:
-          msg.error(ns.put["transfer_error"])
-      else:
-        msg.error(ns.put["invalid_path"])
-    else:
-      msg.error(ns.put["not_connected"])
 
 
   def exit(self):
@@ -317,71 +340,22 @@ class App:
       msg.error(ns.mkdir["error"].format(dirName=dirName))
 
 
-  def rush(self):
-    hostStr = getSingleActionParam(Act["Rush"], self.action)
-    loginStr = ns.rush["login"]["user"]
-    passwdStr = ns.rush["login"]["passwd"]
-    portSrt = ns.rush["login"]["port"]
-    userInput = interact.multiInput([loginStr, passwdStr, portSrt])
-    self.loginData = {
-      "host": hostStr,
-      "user": userInput[loginStr],
-      "passwd": userInput[passwdStr],
-      "port": userInput[portSrt] or settings["port"]
-    }
-    msg.suspend(ns.rush["connecting"].format(host=self.loginData["host"]))
-    if self.login():
-      msg.success(ns.rush["connected"].format(host=self.loginData["host"]))
-    else:
-      msg.error(ns.rush["connecting_error"].format(host=self.loginData["host"]))
-
-
-  def take(self):
-    self.pingServer(message=False)
-    if self.connected:
-      msg.suspend(ns.common["processing"])
-      override = False
-      pathExists = False
-      target = getSingleActionParam(Act["Take"], self.action)
-      targetPath = getNextPath(self.pathRemote, target)
-      _, targetName = os.path.split(targetPath)
-      localTargetPath = getNextPath(self.pathLocal, targetName)
-      if os.path.exists(localTargetPath):
-        pathExists = True
-        confirmOverride = interact.confirm(ns.take["exists"].format(target=targetName))
-        if confirmOverride:
-          override = True
-      try:
-        msg.suspend(ns.take["progress"])
-        if self.ftp.isDir(targetPath):
-          currentLocalPath = self.pathLocal
-          self.downloadTree(targetPath, pathExists, override)
-          self.changeLocalPath(currentLocalPath)
-        else:
-          self.ftp.takeFile(targetPath, self.pathLocal, pathExists, override)
-        msg.success(ns.take["success"])
-      except:
-        msg.error(ns.take["transfer_error"])
-    else:
-      msg.error(ns.take["not_connected"])
-
-
   def whereAmI(self):
     if self.env == envs["Local"]:
-      print(self.pathLocal)
+      msg.default(self.pathLocal)
     else:
       self.pingServer()
       if self.connected:
-        print(self.pathRemote)
+        msg.default(self.pathRemote)
 
 
   def whoAmI(self):
     if self.env == envs["Local"]:
-      print(execCmd("whoami"))
+      msg.default(execCmd("whoami"))
     else:
       self.pingServer()
       if self.connected:
-        print(self.loginData["user"])
+        msg.default(self.loginData["user"])
 
 
   def status(self):

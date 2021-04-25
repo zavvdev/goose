@@ -12,5 +12,8 @@
   },
   "processing": "Processing..",
   "server_says": "Server says:",
-  "connection_lost": "Connection with ftp-server was lost."
+  "connection_lost": "Connection to ftp-server was lost.",
+  "no_connection": "Connection to ftp-server not established.",
+  "transfer_error": "An error occured during the transfer.",
+  "invalid_path": "Path not exist."
 }
