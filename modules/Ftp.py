@@ -76,3 +76,28 @@ class Ftp(FTP):
         self.put(elPath, el)
     backPath = getNextPath(self.pwd(), "..")
     self.cwd(backPath)
+
+  def takeTree(self, targetPath, exists=False, overwrite=True):
+    _, dirName = os.path.split(targetPath)
+    dirNameToCreate = dirName
+    if not overwrite and exists:
+      timestamp = getTimestamp()
+      dirNameToCreate = "{time}_{dir}".format(time=timestamp, dir=dirName)
+    localDirPath = getNextPath(os.getcwd(), dirNameToCreate)
+    if not exists or (exists and not overwrite):
+      os.mkdir(localDirPath)
+    os.chdir(localDirPath)
+    targetList = self.list(targetPath, extra=True)
+    for el in targetList:
+      elPath = getNextPath(targetPath, el["name"])
+      localElPath = getNextPath(os.getcwd(), el["name"])
+      if el["directory"] == "d":
+        innerExists = False
+        if os.path.exists(localElPath):
+          innerExists = True
+        self.takeTree(elPath, innerExists)
+      else:
+        localFileName = getNextPath(os.getcwd(), el["name"])
+        self.get(elPath, localFileName)  
+    backPath = getNextPath(os.getcwd(), "..")
+    os.chdir(backPath)

@@ -134,32 +134,6 @@ class App:
       raise
 
 
-  def downloadTree(self, targetPath, pathExists, override):
-    _, dirName = os.path.split(targetPath)
-    dirNameToCreate = dirName
-    if not override and pathExists:
-      timestamp = getTimestamp()
-      dirNameToCreate = "{time}_{dir}".format(time=timestamp, dir=dirName)
-    localDirPath = getNextPath(self.pathLocal, dirNameToCreate)
-    if not pathExists or (pathExists and not override):
-      os.mkdir(localDirPath)
-    self.changeLocalPath(localDirPath)
-    targetList = self.ftp.list(targetPath, extra=True)
-    for el in targetList:
-      elPath = getNextPath(targetPath, el["name"])
-      localElPath = getNextPath(self.pathLocal, el["name"])
-      if el["directory"] == "d":
-        innerExists = False
-        if os.path.exists(localElPath):
-          innerExists = True
-        self.downloadTree(elPath, innerExists, True)
-      else:
-        localFileName = getNextPath(self.pathLocal, el["name"])
-        self.ftp.get(elPath, localFileName)  
-    backPath = getNextPath(self.pathLocal, "..")
-    self.changeLocalPath(backPath)
-
-
   def rush(self):
     hostStr = getSingleActionParam(Act["Rush"], self.action)
     loginStr = ns.rush["login"]["user"]
@@ -183,7 +157,7 @@ class App:
     self.pingServer(message=False)
     if self.connected:
       msg.suspend(ns.common["processing"])
-      override = False
+      overwrite = False
       pathExists = False
       target = getSingleActionParam(Act["Put"], self.action)
       targetPath = getNextPath(self.pathLocal, target)
@@ -192,15 +166,15 @@ class App:
         if self.ftp.exists(targetName, self.pathRemote):
           pathExists = True
           existsMsg = ns.put["exists"].format(target=targetName)
-          confirmOverride = interact.confirm(existsMsg)
-          if confirmOverride:
-            override = True
+          confirmOverwrite = interact.confirm(existsMsg)
+          if confirmOverwrite:
+            overwrite = True
         try:
           msg.suspend(ns.put["progress"])
           if os.path.isfile(targetPath):
-            self.ftp.putFile(targetPath, pathExists, override)
+            self.ftp.putFile(targetPath, pathExists, overwrite)
           elif os.path.isdir(targetPath):
-            self.ftp.putTree(targetPath, pathExists, override)
+            self.ftp.putTree(targetPath, pathExists, overwrite)
           else:
             raise
           msg.success(ns.put["success"])
@@ -216,7 +190,7 @@ class App:
     self.pingServer(message=False)
     if self.connected:
       msg.suspend(ns.common["processing"])
-      override = False
+      overwrite = False
       pathExists = False
       target = getSingleActionParam(Act["Take"], self.action)
       targetPath = getNextPath(self.pathRemote, target)
@@ -224,17 +198,15 @@ class App:
       localTargetPath = getNextPath(self.pathLocal, targetName)
       if os.path.exists(localTargetPath):
         pathExists = True
-        confirmOverride = interact.confirm(ns.take["exists"].format(target=targetName))
-        if confirmOverride:
-          override = True
+        confirmOverwrite = interact.confirm(ns.take["exists"].format(target=targetName))
+        if confirmOverwrite:
+          overwrite = True
       try:
         msg.suspend(ns.take["progress"])
         if self.ftp.isDir(targetPath):
-          currentLocalPath = self.pathLocal
-          self.downloadTree(targetPath, pathExists, override)
-          self.changeLocalPath(currentLocalPath)
+          self.ftp.takeTree(targetPath, pathExists, overwrite)
         else:
-          self.ftp.takeFile(targetPath, self.pathLocal, pathExists, override)
+          self.ftp.takeFile(targetPath, self.pathLocal, pathExists, overwrite)
         msg.success(ns.take["success"])
       except:
         msg.error(ns.take["transfer_error"])
