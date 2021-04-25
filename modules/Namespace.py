@@ -35,8 +35,6 @@ class Namespace:
     self.status = self.__getNamespace(nsAccessors["Status"])
     self.interact = self.__getNamespace(nsAccessors["Interact"])
 
-  # ----------------------------------------------------
-
   # Name: __getNamespace
   # Desc: Get specific namespace
   # Args: accessor (string<Key of actions>)

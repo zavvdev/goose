@@ -50,4 +50,5 @@ def getHelp():
     {helpAct} or {helpActShort} -- Print all available commands.
     {exit} or {exitShort} -- Terminate program.
     """
-  
+    
+# ----------------------------------------------------
