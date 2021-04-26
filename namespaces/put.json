@@ -1,5 +1,3 @@
 {
-  "progress": "Uploading data to server. Wait a bit..",
-  "success": "Success!",
-  "exists": "The \"{target}\" is already exists. Do you want to overwrite?\nIf YES, data will be merged. If NO, new file/directory will be created."
+  "progress": "Uploading data to server. Wait a bit.."
 }

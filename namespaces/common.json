@@ -1,16 +1,21 @@
 {
   "welcome_message": "Goose v1.0.0. FTP cli tool.\n",
   "input": "goose~>{env}: ",
-  "command_not_found": "Unknown command. Type \"help\" or \"h\" to view all available actions.",
-  "envs": {
+  "prompt_env": {
     "local": "",
     "remote": "(remote)"
   },
-  "unexpected_error": "It seems something went really wrong with.\nPlease, describe the problem in detail on the project homepage: https://github.com/unsxxndxrk/goose",
+
   "processing": "Processing..",
+  "success": "Done.",
+
   "server_says": "Server says:",
-  "connection_lost": "Connection to ftp-server was lost.",
+
+  "exists": "The \"{target}\" is already exists. Do you want to overwrite?\nIf YES, data will be merged. If NO, new file/directory will be created.",
+  "command_not_found": "Unknown command. Type \"help\" or \"h\" to view all available actions.",
+  "unexpected_error": "It seems something went really wrong.\nPlease, describe the problem in detail on the project homepage: https://github.com/unsxxndxrk/goose",
   "no_connection": "Connection to ftp-server not established.",
   "transfer_error": "An error occured during the transfer.",
-  "invalid_path": "Path not exist."
+  "invalid_path": "Path not exist.",
+  "terminal_command_error": "Unable to execute \"{command}\" action from your terminal."
 }

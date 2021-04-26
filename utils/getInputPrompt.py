@@ -12,7 +12,9 @@ ns = Namespace()
 
 def getInputPrompt(env):
   isRemote = env == envs["Remote"]
-  previewEnv = ns.common["envs"]["remote"] if isRemote else ns.common["envs"]["local"]
+  remotePreview = ns.common["prompt_env"]["remote"]
+  localPreview = ns.common["prompt_env"]["local"]
+  previewEnv = remotePreview if isRemote else localPreview
   style = textStyles["Cyan"] + textStyles["Bold"]
   return styledText(style + ns.common["input"].format(env=previewEnv))
 

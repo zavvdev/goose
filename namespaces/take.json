@@ -1,7 +1,3 @@
 {
-  "not_connected": "Cannot download data since you are not connected to anyone ftp server.",
-  "progress": "Downloading data from server. Wait a bit..",
-  "success": "Success!",
-  "transfer_error": "An error occured during the transfer.",
-  "exists": "The \"{target}\" is already exists. Do you want to overwrite?\nIf YES, data will be merged. If NO, new file/directory will be created."
+  "progress": "Downloading data from server. Wait a bit.."
 }
