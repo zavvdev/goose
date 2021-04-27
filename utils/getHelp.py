@@ -1,6 +1,10 @@
 from constants.actions import actions as act
 from utils.styledText import styledText
 from constants.textStyles import textStyles
+from modules.Namespace import Namespace
+from constants.environments import environments as envs
+
+ns = Namespace().help
 
 # Name: getHelp
 # Desc: Format help message
@@ -10,9 +14,11 @@ from constants.textStyles import textStyles
 def getHelp():
   actStyle = textStyles["Bold"] + textStyles["White"]
   noteStyle = textStyles["Yellow"]
-  note1 = styledText(noteStyle + "You can provide relative or absolute path for commands that uses it.")
-  note2 = styledText(noteStyle + "You dont need to use double or single quotes to create/delete/upload/download file or directory with spaces in name.")
-  note3 = styledText(noteStyle + "Put and Take actions move files to where you are at the moment. Example: \"put my-dir\" will upload my-dir folder in place where you in the remote server now.\n")
+
+  note1 = styledText(noteStyle + ns["note1"])
+  note2 = styledText(noteStyle + ns["note2"])
+  note3 = styledText(noteStyle + ns["note3"])
+
   connect = styledText(actStyle + act["Connect"])
   upload = styledText(actStyle + act["Upload"])
   download = styledText(actStyle + act["Download"])
@@ -30,25 +36,60 @@ def getHelp():
   exit = styledText(actStyle + act["Exit"])
   exitShort = styledText(actStyle + act["ExitShort"])
   status = styledText(actStyle + act["Status"])
+
+  connectExample = ns["connect_example"]
+  connectDesc = ns["connect"]
+
+  uploadExample = ns["upload_example"]
+  uploadDesc = ns["upload"]
+
+  downloadExample = ns["download_example"]
+  downloadDesc = ns["download"]
+
+  localEnv = envs["Local"]
+  remoteEnv = envs["Remote"]
+  localEnvDesc = ns["changeLocalEnv"]
+  remoteEnvDesc = ns["changeRemoteEnv"]
+
+  statusDesc = ns["status"]
+
+  mkdirExample = ns["mkdir_example"]
+  mkdirDesc = ns["mkdir"]
+
+  deleteExample = ns["delete_example"]
+  deleteDesc = ns["delete"]
+
+  cdExample = ns["cd_example"]
+  cdDesc = ns["cd"]
+
+  lsDesc = ns["ls"]
+  whereamiDesc = ns["whereami"]
+  whoamiDesc = ns["whoami"]
+  clearDesc = ns["clear"]
+  helpDesc = ns["help"]
+  exitDesc = ns["exit"]
+
+  _or = ns["or"]
+
   return f"""
     {note1}
     {note2}
     {note3}
-    {connect} example.ftp.com -- Connect to remote ftp server.
-    {upload} /local/path/to/data -- Upload file or directory to remote ftp server.
-    {download} /remote/path/to/data -- Download file or directory from remote ftp server.
-    {changeEnv} local -- Switch to local environment.
-    {changeEnv} remote -- Switch to remote environment.
-    {status} -- Show connection status.
-    {mkdir} /path/to/new/dir -- Create directory.
-    {delete} /path/to/data -- Delete file or directory.
-    {cd} /path/to/dir -- Change directory.
-    {ls} -- Print list of content in current directory.
-    {whereami} or {whereamiShort} -- Print current path.
-    {whoami} -- Print your user name.
-    {clear} -- Clear terminal.
-    {helpAct} or {helpActShort} -- Print all available commands.
-    {exit} or {exitShort} -- Terminate program.
+    {connect} {connectExample} -- {connectDesc}
+    {upload} {uploadExample} -- {uploadDesc} 
+    {download} {downloadExample} -- {downloadDesc}
+    {changeEnv} {localEnv} -- {localEnvDesc}
+    {changeEnv} {remoteEnv} -- {remoteEnvDesc}
+    {status} -- {statusDesc}
+    {mkdir} {mkdirExample} -- {mkdirDesc}
+    {delete} {deleteExample} -- {deleteDesc}
+    {cd} {cdExample} -- {cdDesc}
+    {ls} -- {lsDesc}
+    {whereami} {_or} {whereamiShort} -- {whereamiDesc}
+    {whoami} -- {whoamiDesc}
+    {clear} -- {clearDesc}
+    {helpAct} {_or} {helpActShort} -- {helpDesc}
+    {exit} {_or} {exitShort} -- {exitDesc}
     """
     
 # ----------------------------------------------------

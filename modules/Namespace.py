@@ -11,6 +11,7 @@ from constants.nsAccessors import nsAccessors
 #   - errors (namespaces for error messages)
 #   - infos (namespaces for info messages)
 #   - suspends (namespaces for suspend messages)
+#   - help (namespaces for help message)
 
 class Namespace:
   def __init__(self):
@@ -19,6 +20,7 @@ class Namespace:
     self.errors = self.__getNamespace(nsAccessors["Errors"])
     self.infos = self.__getNamespace(nsAccessors["Infos"])
     self.suspends = self.__getNamespace(nsAccessors["Suspends"])
+    self.help = self.__getNamespace(nsAccessors["Help"])
 
   # Name: __getNamespace
   # Desc: Get specific namespace

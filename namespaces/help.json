@@ -1,0 +1,38 @@
+{
+  "note1": "You can provide relative or absolute path for commands that uses it.",
+  "note2": "You dont need to use double or single quotes to create/delete/upload/download file or directory with spaces in name.",
+  "note3": "Put and Take actions move files to where you are at the moment. Example: \"put my-dir\" will upload my-dir folder in place where you in the remote server now.\n",
+  
+  "connect_example": "example.ftp.com",
+  "connect": "Connect to remote ftp server.",
+
+  "upload_example": "/local/path/to/data",
+  "upload": "Upload file or directory to remote ftp server.",
+
+  "download_example": "/remote/path/to/data",
+  "download": "Download file or directory from remote ftp server.",
+
+  "changeLocalEnv": "Switch to local environment.",
+  "changeRemoteEnv": "Switch to remote environment.",
+
+  "status": "Show connection status.",
+
+  "mkdir_example": "/path/to/new/dir",
+  "mkdir": "Create directory.",
+
+  "delete_example": "/path/to/data",
+  "delete": "Delete file or directory.",
+
+  "cd_example": "/path/to/dir",
+  "cd": "Change directory.",
+
+  "ls": "Print list of content in current directory.",
+
+  "whereami": "Print current path.",
+  "whoami": "Print your user name.",
+  "clear": "Clear terminal.",
+  "help": "Print all available commands.",
+  "exit": "Terminate program.",
+
+  "or": "or"
+}

@@ -3,5 +3,6 @@ nsAccessors = {
   "Interact": "interact",
   "Errors": "errors",
   "Infos": "infos",
-  "Suspends": "suspends"
+  "Suspends": "suspends",
+  "Help": "help"
 }
