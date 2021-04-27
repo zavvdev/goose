@@ -5,7 +5,6 @@
     "local": "",
     "remote": "(remote)"
   },
-  "success": "Done.",
   "server_says": "Server says:",
   "status": {
     "connected": "\n⁕ Connected!",
@@ -17,5 +16,6 @@
     "passwd": "Password",
     "port": "Port"
   },
-  "connected": "Successfuly connected to \"{host}\"!"
+  "connected": "Successfuly connected to \"{host}\".",
+  "success": "Done."
 }
