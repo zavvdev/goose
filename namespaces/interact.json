@@ -5,5 +5,8 @@
     "short_yes": "y",
     "short_no": "n",
     "tip": "(Yes/No): "
-  }
+  },
+  "data_exists": "The \"{target}\" is already exists. Do you want to overwrite?\nIf YES, data will be merged. If NO, new file/directory will be created.",
+  "confirm_delete_file": "Delete \"{fileName}\" file?",
+  "confirm_delete_dir": "Delete \"{dirName}\" folder?"
 }

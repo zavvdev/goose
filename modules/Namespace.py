@@ -8,26 +8,18 @@ from constants.nsAccessors import nsAccessors
 #   - __getNamespace (get specific namespace)
 # Fields:
 #   - common (common namespaces)
-#   - rush (rush action namespaces)
-#   - cd (cd action namespaces)
-#   - mkdir (mkdir action namespaces)
-#   - delete (delete action namespaces)
-#   - put (put action namespaces)
-#   - take (take action namespaces)
-#   - status (status action namespaces)
 #   - interact (Interact module namespaces)
+#   - errors (namespaces for error messages)
+#   - infos (namespaces for info messages)
+#   - suspends (namespaces for suspend messages)
 
 class Namespace:
   def __init__(self):
     self.common = self.__getNamespace(nsAccessors["Common"])
-    self.rush = self.__getNamespace(nsAccessors["Rush"])
-    self.cd = self.__getNamespace(nsAccessors["Cd"])
-    self.mkdir = self.__getNamespace(nsAccessors["Mkdir"])
-    self.delete = self.__getNamespace(nsAccessors["Delete"])
-    self.put = self.__getNamespace(nsAccessors["Put"])
-    self.take = self.__getNamespace(nsAccessors["Take"])
-    self.status = self.__getNamespace(nsAccessors["Status"])
     self.interact = self.__getNamespace(nsAccessors["Interact"])
+    self.errors = self.__getNamespace(nsAccessors["Errors"])
+    self.infos = self.__getNamespace(nsAccessors["Infos"])
+    self.suspends = self.__getNamespace(nsAccessors["Suspends"])
 
   # Name: __getNamespace
   # Desc: Get specific namespace

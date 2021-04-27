@@ -5,17 +5,17 @@
     "local": "",
     "remote": "(remote)"
   },
-
-  "processing": "Processing..",
   "success": "Done.",
-
   "server_says": "Server says:",
-
-  "exists": "The \"{target}\" is already exists. Do you want to overwrite?\nIf YES, data will be merged. If NO, new file/directory will be created.",
-  "command_not_found": "Unknown command. Type \"help\" or \"h\" to view all available actions.",
-  "unexpected_error": "It seems something went really wrong.\nPlease, describe the problem in detail on the project homepage: https://github.com/unsxxndxrk/goose",
-  "no_connection": "Connection to ftp-server not established.",
-  "transfer_error": "An error occured during the transfer.",
-  "invalid_path": "Path not exist.",
-  "terminal_command_error": "Unable to execute \"{command}\" action from your terminal."
+  "status": {
+    "connected": "\n⁕ Connected!",
+    "disconnected": "⁕ Disconnected.",
+    "connected_data": "\nHost: {host}\nUsername: {user}\nPassword: {passwd}\nPort: {port}\n"
+  },
+  "login": {
+    "user": "Username",
+    "passwd": "Password",
+    "port": "Port"
+  },
+  "connected": "Successfuly connected to \"{host}\"!"
 }

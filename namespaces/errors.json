@@ -1,0 +1,11 @@
+{
+  "unexpected_error": "It seems something went really wrong.\nPlease, describe the problem in detail on the project homepage: https://github.com/unsxxndxrk/goose.",
+  "no_connection": "Connection to ftp-server not established.",
+  "transfer_error": "An error occured during the transfer.",
+  "invalid_path": "Path not exist.",
+  "terminal_command_error": "Unable to execute \"{command}\" action from your terminal.",
+  "cd_error": "Cannot change directory to \"{dest}\".",
+  "delete_error": "Unable to delete \"{target}\".",
+  "mkdir_error": "Unable to create directory \"{dirName}\".",
+  "connecting_error": "Unable to connect to \"{host}\"."
+}

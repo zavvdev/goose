@@ -61,7 +61,7 @@ class App:
       self.ftp.voidcmd("NOOP")
     except:
       if message:
-        msg.error(ns.common["no_connection"])
+        msg.error(ns.errors["no_connection"])
       self.setStatusDisconnected()
 
   # ----------------------------------------------------
@@ -136,17 +136,16 @@ class App:
 
   def deleteLocal(self, target):
     _, targetName = os.path.split(target)
-    suspendText = ns.delete["deleting"].format(target=targetName)
+    suspendText = ns.suspends["deleting"].format(target=targetName)
     localTargetPath = getNextPath(self.pathLocal, target)
-    msg.suspend(ns.common["processing"])
     if os.path.isfile(localTargetPath):
-      confirmMsg = ns.delete["delete_file"].format(fileName=targetName)
+      confirmMsg = ns.interact["confirm_delete_file"].format(fileName=targetName)
       confirmDelFile = interact.confirm(confirmMsg)
       if confirmDelFile:
         msg.suspend(suspendText)
         os.remove(localTargetPath)
     elif os.path.isdir(localTargetPath):
-      confirmMsg = ns.delete["delete_dir"].format(dirName=targetName)
+      confirmMsg = ns.interact["confirm_delete_dir"].format(dirName=targetName)
       confirmDelDir = interact.confirm(confirmMsg)
       if confirmDelDir:
         msg.suspend(suspendText)
@@ -163,7 +162,7 @@ class App:
 
   def deleteRemote(self, target):
     _, targetName = os.path.split(target)
-    suspendText = ns.delete["deleting"].format(target=targetName)
+    suspendText = ns.suspends["deleting"].format(target=targetName)
     remoteTargetPath = getNextPath(self.pathRemote, target)
     if self.ftp.isDir(remoteTargetPath):
       confirmMsg = ns.delete["delete_dir"].format(dirName=targetName)
@@ -195,9 +194,9 @@ class App:
 
   def rush(self):
     hostStr = getSingleActionParam(act["Rush"], self.action)
-    loginStr = ns.rush["login"]["user"]
-    passwdStr = ns.rush["login"]["passwd"]
-    portSrt = ns.rush["login"]["port"]
+    loginStr = ns.common["login"]["user"]
+    passwdStr = ns.common["login"]["passwd"]
+    portSrt = ns.common["login"]["port"]
     userInput = interact.multiInput([loginStr, passwdStr, portSrt])
     self.loginData = {
       "host": hostStr,
@@ -205,11 +204,11 @@ class App:
       "passwd": userInput[passwdStr],
       "port": userInput[portSrt] or settings["ftp"]["port"]
     }
-    msg.suspend(ns.rush["connecting"].format(host=self.loginData["host"]))
+    msg.suspend(ns.suspends["connecting"].format(host=self.loginData["host"]))
     if self.login():
-      msg.success(ns.rush["connected"].format(host=self.loginData["host"]))
+      msg.success(ns.common["connected"].format(host=self.loginData["host"]))
     else:
-      msg.error(ns.rush["connecting_error"].format(host=self.loginData["host"]))
+      msg.error(ns.errors["connecting_error"].format(host=self.loginData["host"]))
 
   # ----------------------------------------------------
 
@@ -221,7 +220,7 @@ class App:
   def put(self):
     self.pingServer(message=False)
     if self.connected:
-      msg.suspend(ns.common["processing"])
+      msg.suspend(ns.suspends["processing"])
       overwrite = False
       pathExists = False
       target = getSingleActionParam(act["Put"], self.action)
@@ -230,12 +229,12 @@ class App:
       if os.path.exists(targetPath):
         if self.ftp.exists(targetName, self.pathRemote):
           pathExists = True
-          existsMsg = ns.common["exists"].format(target=targetName)
+          existsMsg = ns.interact["data_exists"].format(target=targetName)
           confirmOverwrite = interact.confirm(existsMsg)
           if confirmOverwrite:
             overwrite = True
         try:
-          msg.suspend(ns.put["progress"])
+          msg.suspend(ns.suspends["uploading"])
           if os.path.isfile(targetPath):
             self.ftp.putFile(targetPath, pathExists, overwrite)
           elif os.path.isdir(targetPath):
@@ -244,11 +243,11 @@ class App:
             raise
           msg.success(ns.common["success"])
         except:
-          msg.error(ns.common["transfer_error"])
+          msg.error(ns.errors["transfer_error"])
       else:
-        msg.error(ns.common["invalid_path"])
+        msg.error(ns.errors["invalid_path"])
     else:
-      msg.error(ns.common["no_connection"])
+      msg.error(ns.errors["no_connection"])
 
   # ----------------------------------------------------
 
@@ -260,7 +259,7 @@ class App:
   def take(self):
     self.pingServer(message=False)
     if self.connected:
-      msg.suspend(ns.common["processing"])
+      msg.suspend(ns.suspends["processing"])
       overwrite = False
       pathExists = False
       target = getSingleActionParam(act["Take"], self.action)
@@ -269,20 +268,20 @@ class App:
       localTargetPath = getNextPath(self.pathLocal, targetName)
       if os.path.exists(localTargetPath):
         pathExists = True
-        confirmOverwrite = interact.confirm(ns.common["exists"].format(target=targetName))
+        confirmOverwrite = interact.confirm(ns.interact["data_exists"].format(target=targetName))
         if confirmOverwrite:
           overwrite = True
       try:
-        msg.suspend(ns.take["progress"])
+        msg.suspend(ns.suspends["downloading"])
         if self.ftp.isDir(targetPath):
           self.ftp.takeTree(targetPath, pathExists, overwrite)
         else:
           self.ftp.takeFile(targetPath, self.pathLocal, pathExists, overwrite)
         msg.success(ns.common["success"])
       except:
-        msg.error(ns.common["transfer_error"])
+        msg.error(ns.errors["transfer_error"])
     else:
-      msg.error(ns.common["no_connection"])
+      msg.error(ns.errors["no_connection"])
 
   # ----------------------------------------------------
 
@@ -319,7 +318,7 @@ class App:
           remoteDirPath = getNextPath(self.pathRemote, dirName)
           self.ftp.mkd(remoteDirPath)
     except:
-      msg.error(ns.mkdir["error"].format(dirName=dirName))
+      msg.error(ns.errors["mkdir_error"].format(dirName=dirName))
 
   # ----------------------------------------------------
 
@@ -330,7 +329,7 @@ class App:
 
   def delete(self):
     target = getSingleActionParam(act["Delete"], self.action)
-    msg.suspend(ns.common["processing"])
+    msg.suspend(ns.suspends["processing"])
     try:
       if self.env == envs["Local"]:
         self.deleteLocal(target)
@@ -340,7 +339,7 @@ class App:
           self.deleteRemote(target)
       msg.success(ns.common["success"])
     except:
-      msg.error(ns.delete["error"].format(target=target)) 
+      msg.error(ns.errors["delete_error"].format(target=target)) 
 
   # ----------------------------------------------------
 
@@ -356,7 +355,7 @@ class App:
       if os.path.exists(nextLocalPath):
         self.changeLocalPath(nextLocalPath)  
       else:
-        msg.error(ns.cd["error"].format(dest=nextLocalPath))
+        msg.error(ns.errors["cd_error"].format(dest=nextLocalPath))
     else:
       self.pingServer()
       if self.connected:
@@ -364,7 +363,7 @@ class App:
           nextRemotePath = getNextPath(self.pathRemote, dest)
           self.changeRemotePath(nextRemotePath)
         except:
-          msg.error(ns.cd["error"].format(dest=nextRemotePath))
+          msg.error(ns.errors["cd_error"].format(dest=nextRemotePath))
 
   # ----------------------------------------------------
 
@@ -380,10 +379,9 @@ class App:
         try:
           self.ftp.retrlines("LIST")
         except:
-          msg.error(ns.ls["error"])
+          msg.error(ns.errors["terminal_command_error"].format(command="ls"))
     else:
       try:
-        raise
         if os.path.exists(self.pathLocal):
           os.chdir(self.pathLocal)
           cmd = "ls -l"
@@ -392,7 +390,7 @@ class App:
         else:
           raise
       except:
-        msg.error(ns.common["terminal_command_error"].format(command="ls"))
+        msg.error(ns.errors["terminal_command_error"].format(command="ls"))
 
   # ----------------------------------------------------
 
@@ -405,15 +403,15 @@ class App:
     try:
       self.ftp.voidcmd("NOOP")
       msg.serverResponse(self.ftp.getwelcome())
-      msg.success(ns.status["connected_title"])
-      msg.default(ns.status["connected_data"].format(
+      msg.success(ns.common["status"]["connected"])
+      msg.default(ns.common["status"]["connected_data"].format(
         host=self.loginData["host"],
         user=self.loginData["user"],
         passwd=self.loginData["passwd"],
         port=self.loginData["port"]
       ))
     except:
-      msg.error(ns.status["disconnected_title"])
+      msg.error(ns.common["status"]["disconnected"])
       self.setStatusDisconnected()
 
   # ----------------------------------------------------
@@ -428,7 +426,7 @@ class App:
     if clearResult:
       print(clearResult)
     else:
-      msg.error(ns.common["terminal_command_error"].format(command="clear"))
+      msg.error(ns.errors["terminal_command_error"].format(command="clear"))
 
   # ----------------------------------------------------
 
@@ -527,9 +525,9 @@ class App:
         elif av.isStatus(self.action):
           self.status()
         else:
-          msg.info(ns.common["command_not_found"])
+          msg.info(ns.infos["command_not_found"])
       except:
-        msg.error(ns.common["unexpected_error"])
+        msg.error(ns.errors["unexpected_error"])
         break
   
   # ----------------------------------------------------

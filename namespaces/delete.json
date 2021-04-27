@@ -1,6 +1,0 @@
-{
-  "delete_file": "Delete \"{fileName}\" file?",
-  "delete_dir": "Delete \"{dirName}\" folder?",
-  "error": "Unable to delete \"{target}\".",
-  "deleting": "Deleting \"{target}\".."
-}

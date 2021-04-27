@@ -1,0 +1,7 @@
+{
+  "processing": "Processing..",
+  "deleting": "Deleting \"{target}\"..",
+  "uploading": "Uploading data to server. Wait a bit..",
+  "connecting": "Rushing to \"{host}\"..",
+  "downloading": "Downloading data from server. Wait a bit.."
+}
