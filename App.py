@@ -187,13 +187,13 @@ class App:
   # # # # # # # # # # # # #
 
 
-  # Name: rush
+  # Name: connect
   # Desc: Connect to remote ftp-server
   # Args: void
   # Return: void
 
-  def rush(self):
-    hostStr = getSingleActionParam(act["Rush"], self.action)
+  def connect(self):
+    hostStr = getSingleActionParam(act["Connect"], self.action)
     loginStr = ns.common["login"]["user"]
     passwdStr = ns.common["login"]["passwd"]
     portSrt = ns.common["login"]["port"]
@@ -212,18 +212,18 @@ class App:
 
   # ----------------------------------------------------
 
-  # Name: put
+  # Name: upload
   # Desc: Upload data to remote ftp-server
   # Args: void
   # Return: void
 
-  def put(self):
+  def upload(self):
     self.pingServer(message=False)
     if self.connected:
       msg.suspend(ns.suspends["processing"])
       overwrite = False
       pathExists = False
-      target = getSingleActionParam(act["Put"], self.action)
+      target = getSingleActionParam(act["Upload"], self.action)
       targetPath = getNextPath(self.pathLocal, target)
       _, targetName = os.path.split(target)
       if os.path.exists(targetPath):
@@ -251,18 +251,18 @@ class App:
 
   # ----------------------------------------------------
 
-  # Name: take
+  # Name: download
   # Desc: Download data from remote ftp-server
   # Args: void
   # Return: void
 
-  def take(self):
+  def download(self):
     self.pingServer(message=False)
     if self.connected:
       msg.suspend(ns.suspends["processing"])
       overwrite = False
       pathExists = False
-      target = getSingleActionParam(act["Take"], self.action)
+      target = getSingleActionParam(act["Download"], self.action)
       targetPath = getNextPath(self.pathRemote, target)
       _, targetName = os.path.split(targetPath)
       localTargetPath = getNextPath(self.pathLocal, targetName)
@@ -274,9 +274,9 @@ class App:
       try:
         msg.suspend(ns.suspends["downloading"])
         if self.ftp.isDir(targetPath):
-          self.ftp.takeTree(targetPath, pathExists, overwrite)
+          self.ftp.getTree(targetPath, pathExists, overwrite)
         else:
-          self.ftp.takeFile(targetPath, self.pathLocal, pathExists, overwrite)
+          self.ftp.getFile(targetPath, self.pathLocal, pathExists, overwrite)
         msg.success(ns.common["success"])
       except:
         msg.error(ns.errors["transfer_error"])
@@ -285,14 +285,14 @@ class App:
 
   # ----------------------------------------------------
 
-  # Name: jump
+  # Name: changeEnv
   # Desc: Change current working environment
   # Args: void
   # Return: void
 
-  def jump(self):
-    jumpTo = getSingleActionParam(act["Jump"], self.action)
-    if jumpTo == envs["Local"]:
+  def changeEnv(self):
+    changeTo = getSingleActionParam(act["ChangeEnv"], self.action)
+    if changeTo == envs["Local"]:
       self.env = envs["Local"]
     else:
       self.pingServer()
@@ -502,12 +502,12 @@ class App:
           self.clear()
         elif av.isHelp(self.action):
           self.help()
-        elif av.isRush(self.action):
-          self.rush()
+        elif av.isConnect(self.action):
+          self.connect()
         elif av.isLs(self.action):
           self.ls()
-        elif av.isJump(self.action):
-          self.jump()
+        elif av.isChangeEnv(self.action):
+          self.changeEnv()
         elif av.isWhereAmI(self.action):
           self.whereAmI()
         elif av.isWhoAmI(self.action):
@@ -518,10 +518,10 @@ class App:
           self.mkdir()
         elif av.isDelete(self.action):
           self.delete()
-        elif av.isPut(self.action):
-          self.put()
-        elif av.isTake(self.action):
-          self.take()
+        elif av.isUpload(self.action):
+          self.upload()
+        elif av.isDownload(self.action):
+          self.download()
         elif av.isStatus(self.action):
           self.status()
         else:

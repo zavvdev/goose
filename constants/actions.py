@@ -3,9 +3,9 @@ actions = {
   "ExitShort": "x",
   "Help": "help",
   "HelpShort": "h",
-  "Rush": "rush",
+  "Connect": "rush",
   "Ls": "ls",
-  "Jump": "jump",
+  "ChangeEnv": "jump",
   "Clear": "clear",
   "WhereAmI": "whereami",
   "WhereAmIShort": "pwd",
@@ -13,7 +13,7 @@ actions = {
   "Cd": "cd",
   "Mkdir": "dir",
   "Delete": "del",
-  "Put": "put",
-  "Take": "take",
+  "Upload": "put",
+  "Download": "take",
   "Status": "status"
 }

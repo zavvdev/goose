@@ -13,9 +13,9 @@ from utils.getTimestamp import getTimestamp
 #   - isFile (check if a file is a file)
 #   - rmTree (delete a file tree)
 #   - putFile (upload a single file to the server)
-#   - takeFile (download a single file from the server)
+#   - getFile (download a single file from the server)
 #   - putTree (upload a file tree to the server)
-#   - takeTree (download a file tree from the server)
+#   - getTree (download a file tree from the server)
 
 class Ftp(FTP):
 
@@ -97,14 +97,14 @@ class Ftp(FTP):
 
   # ----------------------------------------------------
 
-  # Name: takeFile
+  # Name: getFile
   # Desc: Download a single file from the server
   # Args: targetPath (string),
   #       exists (boolean=False),
   #       overwrite (boolean=True)
   # Return: void
 
-  def takeFile(self, targetPath, saveToPath, exists=False, overwrite=True):
+  def getFile(self, targetPath, saveToPath, exists=False, overwrite=True):
     _, fileName = os.path.split(targetPath)
     fileNameToCreate = fileName
     if not overwrite and exists:
@@ -147,14 +147,14 @@ class Ftp(FTP):
 
   # ----------------------------------------------------
 
-  # Name: takeTree
+  # Name: getTree
   # Desc: Download a file tree from the server
   # Args: targetPath (string),
   #       exists (boolean=False),
   #       overwrite (boolean=True)
   # Return: void
 
-  def takeTree(self, targetPath, exists=False, overwrite=True):
+  def getTree(self, targetPath, exists=False, overwrite=True):
     _, dirName = os.path.split(targetPath)
     dirNameToCreate = dirName
     if not overwrite and exists:
@@ -172,7 +172,7 @@ class Ftp(FTP):
         innerExists = False
         if os.path.exists(localElPath):
           innerExists = True
-        self.takeTree(elPath, innerExists)
+        self.getTree(elPath, innerExists)
       else:
         localFileName = getNextPath(os.getcwd(), el["name"])
         self.get(elPath, localFileName)  

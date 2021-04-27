@@ -10,15 +10,15 @@ from constants.environments import environments as envs
 #   - isCd (check for a match with the Cd action)
 #   - isClear (check for a match with the Clear action)
 #   - isDelete (check for a match with the Delete action)
-#   - isPut (check for a match with the Put action)
+#   - isUpload (check for a match with the Upload action)
 #   - isExit (check for a match with the Exit action)
 #   - isHelp (check for a match with the Help action)
-#   - isJump (check for a match with the Jump action)
+#   - isChangeEnv (check for a match with the ChangeEnv action)
 #   - isLs (check for a match with the Ls action)
 #   - isMkdir (check for a match with the Mkdir action)
-#   - isRush (check for a match with the Rush action)
+#   - isConnect (check for a match with the Connect action)
 #   - isStatus (check for a match with the Status action)
-#   - isTake (check for a match with the Take action)
+#   - isDownload (check for a match with the Download action)
 #   - isWhereAmI (check for a match with the WhereAmI action)
 #   - isWhoAmI (check for a match with the WhoAmI action)
 
@@ -70,15 +70,15 @@ class ActionVerifier:
 
   # ----------------------------------------------------
 
-  # Name: isPut
-  # Desc: Check for a match with the Put action
+  # Name: isUpload
+  # Desc: Check for a match with the Upload action
   # Args: action (string)
   # Return: boolean
 
-  def isPut(self, action):
+  def isUpload(self, action):
     splited = self.__splitAction(action)
     if len(splited) >= 2:
-      return splited[0] == act["Put"]
+      return splited[0] == act["Upload"]
     return False
 
   # ----------------------------------------------------
@@ -103,15 +103,15 @@ class ActionVerifier:
 
   # ----------------------------------------------------
 
-  # Name: isJump
-  # Desc: Check for a match with the Jump action
+  # Name: isChangeEnv
+  # Desc: Check for a match with the ChangeEnv action
   # Args: action (string)
   # Return: boolean
 
-  def isJump(self, action):
+  def isChangeEnv(self, action):
     splited = self.__splitAction(action)
     if len(splited) == 2:
-      isAct = splited[0] == act["Jump"]
+      isAct = splited[0] == act["ChangeEnv"]
       local = splited[1] == envs["Local"]
       remote = splited[1] == envs["Remote"]
       return isAct and (local or remote)
@@ -142,15 +142,15 @@ class ActionVerifier:
 
   # ----------------------------------------------------
 
-  # Name: isRush
-  # Desc: Check for a match with the Rush action
+  # Name: isConnect
+  # Desc: Check for a match with the Connect action
   # Args: action (string)
   # Return: boolean
 
-  def isRush(self, action):
+  def isConnect(self, action):
     splited = self.__splitAction(action)
     if len(splited) == 2:
-      return splited[0] == act["Rush"]
+      return splited[0] == act["Connect"]
     return False
 
   # ----------------------------------------------------
@@ -165,15 +165,15 @@ class ActionVerifier:
 
   # ----------------------------------------------------
 
-  # Name: isTake
-  # Desc: Check for a match with the Take action
+  # Name: isDownload
+  # Desc: Check for a match with the Download action
   # Args: action (string)
   # Return: boolean
 
-  def isTake(self, action):
+  def isDownload(self, action):
     splited = self.__splitAction(action)
     if len(splited) >= 2:
-      return splited[0] == act["Take"]
+      return splited[0] == act["Download"]
     return False
 
   # ----------------------------------------------------
