@@ -4,7 +4,6 @@ from constants.environments import environments as envs
 # Name: ActionVerifier
 # Desc: Provide the ability to check the entered command
 #       for coincidence with application actions
-# Inherits: None
 # Methods: 
 #   - __splitAction (split action by Space symbol)
 #   - isCd (check for a match with the Cd action)

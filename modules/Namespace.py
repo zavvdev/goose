@@ -3,7 +3,6 @@ from constants.nsAccessors import nsAccessors
 
 # Name: Namespace
 # Desc: Provide interface for accessing application namespaces
-# Inherits: None
 # Methods: 
 #   - __getNamespace (get specific namespace)
 # Fields:

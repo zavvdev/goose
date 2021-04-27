@@ -6,7 +6,6 @@ ns = Namespace().interact
 
 # Name: Interact
 # Desc: Provide opportunities for interactions with the application
-# Inherits: None
 # Methods: 
 #   - confirm (confirm some statement)
 #   - multiInput (collect multiple user responses)

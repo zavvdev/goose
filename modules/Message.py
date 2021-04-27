@@ -7,7 +7,6 @@ ns = Namespace()
 
 # Name: Message
 # Desc: Provide interface for using application messages with custom styling
-# Inherits: None
 # Methods: 
 #   - default (print default message)
 #   - welcome (print welcome app message)
