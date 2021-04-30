@@ -135,6 +135,7 @@ class App:
   # Return: void
 
   def deleteLocal(self, target):
+    msg.suspend(ns.suspends["processing"])
     _, targetName = os.path.split(target)
     suspendText = ns.suspends["deleting"].format(target=targetName)
     localTargetPath = getNextPath(self.pathLocal, target)
@@ -144,12 +145,14 @@ class App:
       if confirmDelFile:
         msg.suspend(suspendText)
         os.remove(localTargetPath)
+        msg.success(ns.common["success"])
     elif os.path.isdir(localTargetPath):
       confirmMsg = ns.interact["confirm_delete_dir"].format(dirName=targetName)
       confirmDelDir = interact.confirm(confirmMsg)
       if confirmDelDir:
         msg.suspend(suspendText)
         shutil.rmtree(localTargetPath)
+        msg.success(ns.common["success"])
     else:
       raise
 
@@ -161,21 +164,24 @@ class App:
   # Return: void
 
   def deleteRemote(self, target):
+    msg.suspend(ns.suspends["processing"])
     _, targetName = os.path.split(target)
     suspendText = ns.suspends["deleting"].format(target=targetName)
     remoteTargetPath = getNextPath(self.pathRemote, target)
     if self.ftp.isDir(remoteTargetPath):
-      confirmMsg = ns.delete["delete_dir"].format(dirName=targetName)
+      confirmMsg = ns.interact["confirm_delete_dir"].format(dirName=targetName)
       confirmDelDir = interact.confirm(confirmMsg)
       if confirmDelDir:
         msg.suspend(suspendText)
         self.ftp.rmTree(remoteTargetPath)
+        msg.success(ns.common["success"])
     elif self.ftp.isFile(remoteTargetPath):
-      confirmMsg = ns.delete["delete_file"].format(fileName=targetName)
+      confirmMsg = ns.interact["confirm_delete_file"].format(fileName=targetName)
       confirmDelFile = interact.confirm(confirmMsg)
       if confirmDelFile:
         msg.suspend(suspendText)
         self.ftp.delete(remoteTargetPath)
+        msg.success(ns.common["success"])
     else:
       raise
 
@@ -329,7 +335,6 @@ class App:
 
   def delete(self):
     target = getSingleActionParam(act["Delete"], self.action)
-    msg.suspend(ns.suspends["processing"])
     try:
       if self.env == envs["Local"]:
         self.deleteLocal(target)
@@ -337,7 +342,6 @@ class App:
         self.pingServer()
         if self.connected:
           self.deleteRemote(target)
-      msg.success(ns.common["success"])
     except:
       msg.error(ns.errors["delete_error"].format(target=target)) 
 
