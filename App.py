@@ -135,22 +135,19 @@ class App:
   # Return: void
 
   def deleteLocal(self, target):
-    msg.suspend(ns.suspends["processing"])
+    msg.suspend(ns.common["processing"])
     _, targetName = os.path.split(target)
-    suspendText = ns.suspends["deleting"].format(target=targetName)
     localTargetPath = getNextPath(self.pathLocal, target)
     if os.path.isfile(localTargetPath):
       confirmMsg = ns.interact["confirm_delete_file"].format(fileName=targetName)
       confirmDelFile = interact.confirm(confirmMsg)
       if confirmDelFile:
-        msg.suspend(suspendText)
         os.remove(localTargetPath)
         msg.success(ns.common["success"])
     elif os.path.isdir(localTargetPath):
       confirmMsg = ns.interact["confirm_delete_dir"].format(dirName=targetName)
       confirmDelDir = interact.confirm(confirmMsg)
       if confirmDelDir:
-        msg.suspend(suspendText)
         shutil.rmtree(localTargetPath)
         msg.success(ns.common["success"])
     else:
@@ -164,22 +161,19 @@ class App:
   # Return: void
 
   def deleteRemote(self, target):
-    msg.suspend(ns.suspends["processing"])
+    msg.suspend(ns.common["processing"])
     _, targetName = os.path.split(target)
-    suspendText = ns.suspends["deleting"].format(target=targetName)
     remoteTargetPath = getNextPath(self.pathRemote, target)
     if self.ftp.isDir(remoteTargetPath):
       confirmMsg = ns.interact["confirm_delete_dir"].format(dirName=targetName)
       confirmDelDir = interact.confirm(confirmMsg)
       if confirmDelDir:
-        msg.suspend(suspendText)
         self.ftp.rmTree(remoteTargetPath)
         msg.success(ns.common["success"])
     elif self.ftp.isFile(remoteTargetPath):
       confirmMsg = ns.interact["confirm_delete_file"].format(fileName=targetName)
       confirmDelFile = interact.confirm(confirmMsg)
       if confirmDelFile:
-        msg.suspend(suspendText)
         self.ftp.delete(remoteTargetPath)
         msg.success(ns.common["success"])
     else:
@@ -226,7 +220,7 @@ class App:
   def upload(self):
     self.pingServer(message=False)
     if self.connected:
-      msg.suspend(ns.suspends["processing"])
+      msg.suspend(ns.common["processing"])
       overwrite = False
       pathExists = False
       target = getSingleActionParam(act["Upload"], self.action)
@@ -240,7 +234,6 @@ class App:
           if confirmOverwrite:
             overwrite = True
         try:
-          msg.suspend(ns.suspends["uploading"])
           if os.path.isfile(targetPath):
             self.ftp.putFile(targetPath, pathExists, overwrite)
           elif os.path.isdir(targetPath):
@@ -248,7 +241,8 @@ class App:
           else:
             raise
           msg.success(ns.common["success"])
-        except:
+        except Exception as e:
+          msg.default(e)
           msg.error(ns.errors["transfer_error"])
       else:
         msg.error(ns.errors["invalid_path"])
@@ -265,7 +259,7 @@ class App:
   def download(self):
     self.pingServer(message=False)
     if self.connected:
-      msg.suspend(ns.suspends["processing"])
+      msg.suspend(ns.common["processing"])
       overwrite = False
       pathExists = False
       target = getSingleActionParam(act["Download"], self.action)
@@ -277,17 +271,15 @@ class App:
         confirmOverwrite = interact.confirm(ns.interact["data_exists"].format(target=targetName))
         if confirmOverwrite:
           overwrite = True
-        try:
-          msg.suspend(ns.suspends["downloading"])
-          if self.ftp.isDir(targetPath):
-            self.ftp.getTree(targetPath, pathExists, overwrite)
-          else:
-            self.ftp.getFile(targetPath, self.pathLocal, pathExists, overwrite)
-          msg.success(ns.common["success"])
-        except:
-          msg.error(ns.errors["transfer_error"])
-      else:
-        msg.error(ns.errors["invalid_path"])
+      try:
+        if self.ftp.isDir(targetPath):
+          self.ftp.getTree(targetPath, pathExists, overwrite)
+        else:
+          self.ftp.getFile(targetPath, self.pathLocal, pathExists, overwrite)
+        msg.success(ns.common["success"])
+      except Exception as e:
+        msg.default(e)
+        msg.error(ns.errors["transfer_error"])
     else:
       msg.error(ns.errors["no_connection"])
 
@@ -325,7 +317,8 @@ class App:
         if self.connected:
           remoteDirPath = getNextPath(self.pathRemote, dirName)
           self.ftp.mkd(remoteDirPath)
-    except:
+    except Exception as e:
+      msg.default(e)
       msg.error(ns.errors["mkdir_error"].format(dirName=dirName))
 
   # ----------------------------------------------------
@@ -344,7 +337,8 @@ class App:
         self.pingServer()
         if self.connected:
           self.deleteRemote(target)
-    except:
+    except Exception as e:
+      msg.default(e)
       msg.error(ns.errors["delete_error"].format(target=target)) 
 
   # ----------------------------------------------------
@@ -368,7 +362,8 @@ class App:
         try:
           nextRemotePath = getNextPath(self.pathRemote, dest)
           self.changeRemotePath(nextRemotePath)
-        except:
+        except Exception as e:
+          msg.default(e)
           msg.error(ns.errors["cd_error"].format(dest=nextRemotePath))
 
   # ----------------------------------------------------
@@ -384,7 +379,8 @@ class App:
       if self.connected:
         try:
           self.ftp.retrlines("LIST")
-        except:
+        except Exception as e:
+          msg.default(e)
           msg.error(ns.errors["terminal_command_error"].format(command="ls"))
     else:
       try:
@@ -395,7 +391,8 @@ class App:
           print(output)
         else:
           raise
-      except:
+      except Exception as e:
+        msg.default(e)
         msg.error(ns.errors["terminal_command_error"].format(command="ls"))
 
   # ----------------------------------------------------
@@ -531,7 +528,7 @@ class App:
         elif av.isStatus(self.action):
           self.status()
         else:
-          msg.info(ns.infos["command_not_found"])
+          msg.info(ns.common["command_not_found"])
       except:
         msg.error(ns.errors["unexpected_error"])
         break

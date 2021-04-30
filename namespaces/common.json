@@ -17,5 +17,12 @@
     "port": "Port"
   },
   "connected": "Successfuly connected to \"{host}\".",
-  "success": "Done."
+  "success": "Done.",
+  "skipping_symlink": "Skipping symlink: ",
+  "uploading": "Uploading: ",
+  "downloading": "Downloading: ",
+  "deleting": "Deleting: ",
+  "processing": "Processing..",
+  "connecting": "Rushing to \"{host}\"..",
+  "command_not_found": "Unknown command. Type \"help\" or \"h\" to view all available actions."
 }

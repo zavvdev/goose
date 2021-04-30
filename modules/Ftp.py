@@ -2,6 +2,11 @@ import os
 from ftpretty import ftpretty as FTP
 from utils.getNextPath import getNextPath
 from utils.getTimestamp import getTimestamp
+from modules.Namespace import Namespace
+from modules.Message import Message
+
+ns = Namespace()
+msg = Message()
 
 # Name: Ftp
 # Desc: Provide additional features for ftp.
@@ -75,6 +80,7 @@ class Ftp(FTP):
       if target["directory"] == "d":
         self.rmTree(preparedTargetPath)
       else:
+        msg.default(ns.common["deleting"] + preparedTargetPath)
         self.delete(preparedTargetPath)
     self.rmd(path)
 
@@ -93,6 +99,7 @@ class Ftp(FTP):
     if not overwrite and exists:
       timestamp = getTimestamp()
       fileNameToUpload = "{time}_{file}".format(time=timestamp, file=fileName)
+    msg.default(ns.common["uploading"] + targetPath)
     self.put(targetPath, fileNameToUpload)
 
   # ----------------------------------------------------
@@ -111,6 +118,7 @@ class Ftp(FTP):
       timestamp = getTimestamp()
       fileNameToCreate = "{time}_{file}".format(time=timestamp, file=fileName)
     localFileName = getNextPath(saveToPath, fileNameToCreate)
+    msg.default(ns.common["downloading"] + targetPath)
     self.get(targetPath, localFileName)
 
   # ----------------------------------------------------
@@ -135,12 +143,17 @@ class Ftp(FTP):
     for el in os.listdir(targetPath):
       elPath = getNextPath(targetPath, el)
       remoteElPath = getNextPath(self.pwd(), el)
+      if os.path.islink(elPath):
+        msg.default(ns.common["skipping_symlink"] + elPath)
+        continue
       if os.path.isdir(elPath):
         innerExists = False
         if self.exists(el, self.pwd()):
           innerExists = True
+        msg.default(ns.common["uploading"] + elPath)
         self.putTree(elPath, innerExists)
       else:
+        msg.default(ns.common["uploading"] + elPath)
         self.put(elPath, el)
     backPath = getNextPath(self.pwd(), "..")
     self.cwd(backPath)
@@ -172,9 +185,11 @@ class Ftp(FTP):
         innerExists = False
         if os.path.exists(localElPath):
           innerExists = True
+        msg.default(ns.common["downloading"] + elPath)
         self.getTree(elPath, innerExists)
       else:
         localFileName = getNextPath(os.getcwd(), el["name"])
+        msg.default(ns.common["downloading"] + elPath)
         self.get(elPath, localFileName)  
     backPath = getNextPath(os.getcwd(), "..")
     os.chdir(backPath)
