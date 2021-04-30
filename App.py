@@ -277,15 +277,17 @@ class App:
         confirmOverwrite = interact.confirm(ns.interact["data_exists"].format(target=targetName))
         if confirmOverwrite:
           overwrite = True
-      try:
-        msg.suspend(ns.suspends["downloading"])
-        if self.ftp.isDir(targetPath):
-          self.ftp.getTree(targetPath, pathExists, overwrite)
-        else:
-          self.ftp.getFile(targetPath, self.pathLocal, pathExists, overwrite)
-        msg.success(ns.common["success"])
-      except:
-        msg.error(ns.errors["transfer_error"])
+        try:
+          msg.suspend(ns.suspends["downloading"])
+          if self.ftp.isDir(targetPath):
+            self.ftp.getTree(targetPath, pathExists, overwrite)
+          else:
+            self.ftp.getFile(targetPath, self.pathLocal, pathExists, overwrite)
+          msg.success(ns.common["success"])
+        except:
+          msg.error(ns.errors["transfer_error"])
+      else:
+        msg.error(ns.errors["invalid_path"])
     else:
       msg.error(ns.errors["no_connection"])
 
