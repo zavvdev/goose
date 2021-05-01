@@ -194,12 +194,10 @@ class App:
         uploadingMsg = ns.common["uploading"].format(target=targetPath)
         try:
           spinner.start(uploadingMsg)
-          if os.path.isfile(targetPath):
-            self.ftp.putFile(targetPath, pathExists, overwrite)
-          elif os.path.isdir(targetPath):
+          if os.path.isdir(targetPath):
             self.ftp.putTree(targetPath, pathExists, overwrite)
           else:
-            raise
+            self.ftp.putFile(targetPath, pathExists, overwrite)
           spinner.success(uploadingMsg)
           msg.success(ns.common["success"])
         except Exception as e:
@@ -237,10 +235,8 @@ class App:
         spinner.start(downloadingMsg)
         if self.ftp.isDir(targetPath):
           self.ftp.getTree(targetPath, pathExists, overwrite)
-        elif self.ftp.isFile(targetPath):
-          self.ftp.getFile(targetPath, self.pathLocal, pathExists, overwrite)
         else:
-          raise
+          self.ftp.getFile(targetPath, self.pathLocal, pathExists, overwrite)
         spinner.success(downloadingMsg)
         msg.success(ns.common["success"])
       except Exception as e:
