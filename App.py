@@ -100,12 +100,9 @@ class App:
       self.connected = True
       self.env = envs["Remote"]
       self.pathRemote = self.ftp.pwd()
-      msg.serverResponse(self.ftp.getwelcome())
       return True
     except Exception as e:
-      self.setStatusDisconnected()
-      msg.serverResponse(e)
-      return False
+      raise e
 
   # ----------------------------------------------------
 
@@ -151,19 +148,26 @@ class App:
     portSrt = ns.common["login"]["port"]
     userInput = interact.multiInput([loginStr, passwdStr, portSrt])
     self.loginData = {
-      "host": "192.168.0.105", #hostStr,
-      "user": "ubuntu-ftp", #userInput[loginStr],
-      "passwd": "123", #userInput[passwdStr],
+      "host": hostStr,
+      "user": userInput[loginStr],
+      "passwd": userInput[passwdStr],
       "port": userInput[portSrt] or settings["ftp"]["port"]
     }
     connectingMsg = ns.common["connecting"].format(host=self.loginData["host"])
+    connectedMsg = ns.common["connected"].format(host=self.loginData["host"])
+    errorMsg = ns.errors["connecting_error"].format(host=self.loginData["host"])
     spinner.start(connectingMsg)
-    if self.login():
-      spinner.success(connectingMsg)
-      msg.success(ns.common["connected"].format(host=self.loginData["host"]))
-    else:
+    try:
+      isConnected = self.login()
+      if isConnected:
+        spinner.success(connectingMsg)
+        msg.default(self.ftp.getwelcome())
+        msg.success(connectedMsg)
+    except Exception as e:
       spinner.fail(connectingMsg)
-      msg.error(ns.errors["connecting_error"].format(host=self.loginData["host"]))
+      self.setStatusDisconnected()
+      msg.default(e)
+      msg.error(errorMsg)
 
   # ----------------------------------------------------
 
@@ -386,7 +390,7 @@ class App:
   def status(self):
     try:
       self.ftp.voidcmd("NOOP")
-      msg.serverResponse(self.ftp.getwelcome())
+      msg.default(self.ftp.getwelcome())
       msg.success(ns.common["status"]["connected"])
       msg.default(ns.common["status"]["connected_data"].format(
         host=self.loginData["host"],

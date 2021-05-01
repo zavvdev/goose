@@ -13,8 +13,6 @@ ns = Namespace()
 #   - error (print error message)
 #   - info (print info message)
 #   - success (print success message)
-#   - suspend (print suspend message)
-#   - serverResponse (print server response message)
 #   - help (print help message)
 
 class Message:
@@ -68,26 +66,6 @@ class Message:
 
   def success(self, text):
     print(styledText(textStyles["Green"] + text))
-
-  # ----------------------------------------------------
-
-  # Name: suspend
-  # Desc: Print suspend message
-  # Args: text (string)
-  # Return: void
-
-  def suspend(self, text):
-    print(styledText(textStyles["Violet"] + text))
-
-  # ----------------------------------------------------
-
-  # Name: serverResponse
-  # Desc: Print server response message
-  # Args: text (string)
-  # Return: void
-
-  def serverResponse(self, text):
-    print(ns.common["server_says"], text)
 
   # ----------------------------------------------------
 

@@ -76,8 +76,6 @@ class Ftp(FTP):
         targetPath = os.path.join(os.path.dirname(path), targetPath)             
       if not os.path.exists(targetPath):
         return True
-      else:
-        return False
     return False
 
   # ----------------------------------------------------
