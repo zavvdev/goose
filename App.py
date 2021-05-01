@@ -258,34 +258,46 @@ class App:
 
   def delete(self):
     target = getSingleActionParam(act["Delete"], self.action)
-    _, targetName = os.path.split(target)
-    deletingMsg = ns.common["deleting"].format(target=target)
-    confirmMsg = ns.interact["confirm_delete"].format(fileName=targetName)
-    confirmDel = interact.confirm(confirmMsg)
-    if confirmDel:
-      spinner.start(deletingMsg)
-      try:
-        _, targetName = os.path.split(target)
-        if self.env == envs["Local"]:
-          localTargetPath = getNextPath(self.pathLocal, targetName)      
-          if os.path.isdir(localTargetPath):
-            shutil.rmtree(localTargetPath)
-          else:
-            os.remove(localTargetPath)
-        else:
-          self.pingServer()
-          if self.connected:
-            remoteTargetPath = getNextPath(self.pathRemote, targetName)
-            if self.ftp.isDir(remoteTargetPath):
-              self.ftp.rmTree(remoteTargetPath)
+    try:
+      if self.env == envs["Local"]:
+        localTargetPath = getNextPath(self.pathLocal, target)  
+        if os.path.exists(localTargetPath):
+          deletingMsg = ns.common["deleting"].format(target=localTargetPath)  
+          confirmMsg = ns.interact["confirm_delete"].format(fileName=localTargetPath)
+          confirmDel = interact.confirm(confirmMsg)  
+          if confirmDel:
+            spinner.start(deletingMsg)
+            if os.path.isdir(localTargetPath):
+              shutil.rmtree(localTargetPath)
             else:
-              self.ftp.delete(remoteTargetPath)
-        spinner.success(deletingMsg)
-        msg.success(ns.common["success"])
-      except Exception as e:
-        spinner.fail(deletingMsg)
-        msg.default(e)
-        msg.error(ns.errors["delete_error"].format(target=target)) 
+              os.remove(localTargetPath)
+            spinner.success(deletingMsg)
+            msg.success(ns.common["success"])
+        else:
+          msg.error(ns.errors["invalid_path"])
+      else:
+        self.pingServer()
+        if self.connected:
+          remoteTargetPath = getNextPath(self.pathRemote, target)
+          absTargetPath, absTargetName = os.path.split(remoteTargetPath)
+          if self.ftp.exists(absTargetName, absTargetPath):
+            deletingMsg = ns.common["deleting"].format(target=remoteTargetPath)  
+            confirmMsg = ns.interact["confirm_delete"].format(fileName=remoteTargetPath)
+            confirmDel = interact.confirm(confirmMsg)  
+            if confirmDel:
+              spinner.start(deletingMsg)
+              if self.ftp.isDir(remoteTargetPath):
+                self.ftp.rmTree(remoteTargetPath)
+              else:
+                self.ftp.delete(remoteTargetPath)
+              spinner.success(deletingMsg)
+              msg.success(ns.common["success"])
+          else:
+            msg.error(ns.errors["invalid_path"])
+    except Exception as e:
+      spinner.fail(deletingMsg)
+      msg.default(e)
+      msg.error(ns.errors["delete_error"].format(target=target)) 
 
   # ----------------------------------------------------
 
