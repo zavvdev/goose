@@ -7,6 +7,7 @@ from modules.Message import Message
 from modules.Ftp import Ftp
 from modules.Interact import Interact
 from modules.Namespace import Namespace
+from modules.Spinner import Spinner
 
 from constants.settings import settings
 from constants.environments import environments as envs
@@ -22,6 +23,7 @@ av = ActionVerifier()
 msg = Message()
 interact = Interact()
 ns = Namespace()
+spinner = Spinner()
 
 class App:
   def __init__(self):
@@ -129,56 +131,6 @@ class App:
 
   # ----------------------------------------------------
 
-  # Name: deleteLocal
-  # Desc: Delete local file or folder
-  # Args: target (string)
-  # Return: void
-
-  def deleteLocal(self, target):
-    msg.suspend(ns.common["processing"])
-    _, targetName = os.path.split(target)
-    localTargetPath = getNextPath(self.pathLocal, target)
-    if os.path.isfile(localTargetPath):
-      confirmMsg = ns.interact["confirm_delete_file"].format(fileName=targetName)
-      confirmDelFile = interact.confirm(confirmMsg)
-      if confirmDelFile:
-        os.remove(localTargetPath)
-        msg.success(ns.common["success"])
-    elif os.path.isdir(localTargetPath):
-      confirmMsg = ns.interact["confirm_delete_dir"].format(dirName=targetName)
-      confirmDelDir = interact.confirm(confirmMsg)
-      if confirmDelDir:
-        shutil.rmtree(localTargetPath)
-        msg.success(ns.common["success"])
-    else:
-      raise
-
-  # ----------------------------------------------------
-
-  # Name: deleteRemote
-  # Desc: Delete remote file or folder
-  # Args: target (string)
-  # Return: void
-
-  def deleteRemote(self, target):
-    msg.suspend(ns.common["processing"])
-    _, targetName = os.path.split(target)
-    remoteTargetPath = getNextPath(self.pathRemote, target)
-    if self.ftp.isDir(remoteTargetPath):
-      confirmMsg = ns.interact["confirm_delete_dir"].format(dirName=targetName)
-      confirmDelDir = interact.confirm(confirmMsg)
-      if confirmDelDir:
-        self.ftp.rmTree(remoteTargetPath)
-        msg.success(ns.common["success"])
-    elif self.ftp.isFile(remoteTargetPath):
-      confirmMsg = ns.interact["confirm_delete_file"].format(fileName=targetName)
-      confirmDelFile = interact.confirm(confirmMsg)
-      if confirmDelFile:
-        self.ftp.delete(remoteTargetPath)
-        msg.success(ns.common["success"])
-    else:
-      raise
-
   
   # # # # # # # # # # # # #
   #                       #
@@ -199,15 +151,18 @@ class App:
     portSrt = ns.common["login"]["port"]
     userInput = interact.multiInput([loginStr, passwdStr, portSrt])
     self.loginData = {
-      "host": hostStr,
-      "user": userInput[loginStr],
-      "passwd": userInput[passwdStr],
+      "host": "192.168.0.105", #hostStr,
+      "user": "ubuntu-ftp", #userInput[loginStr],
+      "passwd": "123", #userInput[passwdStr],
       "port": userInput[portSrt] or settings["ftp"]["port"]
     }
-    msg.suspend(ns.suspends["connecting"].format(host=self.loginData["host"]))
+    connectingMsg = ns.common["connecting"].format(host=self.loginData["host"])
+    spinner.start(connectingMsg)
     if self.login():
+      spinner.success(connectingMsg)
       msg.success(ns.common["connected"].format(host=self.loginData["host"]))
     else:
+      spinner.fail(connectingMsg)
       msg.error(ns.errors["connecting_error"].format(host=self.loginData["host"]))
 
   # ----------------------------------------------------
@@ -220,7 +175,6 @@ class App:
   def upload(self):
     self.pingServer(message=False)
     if self.connected:
-      msg.suspend(ns.common["processing"])
       overwrite = False
       pathExists = False
       target = getSingleActionParam(act["Upload"], self.action)
@@ -233,15 +187,19 @@ class App:
           confirmOverwrite = interact.confirm(existsMsg)
           if confirmOverwrite:
             overwrite = True
+        uploadingMsg = ns.common["uploading"].format(target=targetPath)
         try:
+          spinner.start(uploadingMsg)
           if os.path.isfile(targetPath):
             self.ftp.putFile(targetPath, pathExists, overwrite)
           elif os.path.isdir(targetPath):
             self.ftp.putTree(targetPath, pathExists, overwrite)
           else:
             raise
+          spinner.success(uploadingMsg)
           msg.success(ns.common["success"])
         except Exception as e:
+          spinner.fail(uploadingMsg)
           msg.default(e)
           msg.error(ns.errors["transfer_error"])
       else:
@@ -259,7 +217,6 @@ class App:
   def download(self):
     self.pingServer(message=False)
     if self.connected:
-      msg.suspend(ns.common["processing"])
       overwrite = False
       pathExists = False
       target = getSingleActionParam(act["Download"], self.action)
@@ -271,13 +228,19 @@ class App:
         confirmOverwrite = interact.confirm(ns.interact["data_exists"].format(target=targetName))
         if confirmOverwrite:
           overwrite = True
+      downloadingMsg = ns.common["downloading"].format(target=targetPath)
       try:
+        spinner.start(downloadingMsg)
         if self.ftp.isDir(targetPath):
           self.ftp.getTree(targetPath, pathExists, overwrite)
-        else:
+        elif self.ftp.isFile(targetPath):
           self.ftp.getFile(targetPath, self.pathLocal, pathExists, overwrite)
+        else:
+          raise
+        spinner.success(downloadingMsg)
         msg.success(ns.common["success"])
       except Exception as e:
+        spinner.fail(downloadingMsg)
         msg.default(e)
         msg.error(ns.errors["transfer_error"])
     else:
@@ -285,20 +248,42 @@ class App:
 
   # ----------------------------------------------------
 
-  # Name: changeEnv
-  # Desc: Change current working environment
+  # Name: delete
+  # Desc: Delete local or remote file/directory
   # Args: void
   # Return: void
 
-  def changeEnv(self):
-    changeTo = getSingleActionParam(act["ChangeEnv"], self.action)
-    if changeTo == envs["Local"]:
-      self.env = envs["Local"]
-    else:
-      self.pingServer()
-      if self.connected:
-        self.env = envs["Remote"]
-      
+  def delete(self):
+    target = getSingleActionParam(act["Delete"], self.action)
+    _, targetName = os.path.split(target)
+    deletingMsg = ns.common["deleting"].format(target=target)
+    confirmMsg = ns.interact["confirm_delete"].format(fileName=targetName)
+    confirmDel = interact.confirm(confirmMsg)
+    if confirmDel:
+      spinner.start(deletingMsg)
+      try:
+        _, targetName = os.path.split(target)
+        if self.env == envs["Local"]:
+          localTargetPath = getNextPath(self.pathLocal, targetName)      
+          if os.path.isdir(localTargetPath):
+            shutil.rmtree(localTargetPath)
+          else:
+            os.remove(localTargetPath)
+        else:
+          self.pingServer()
+          if self.connected:
+            remoteTargetPath = getNextPath(self.pathRemote, targetName)
+            if self.ftp.isDir(remoteTargetPath):
+              self.ftp.rmTree(remoteTargetPath)
+            else:
+              self.ftp.delete(remoteTargetPath)
+        spinner.success(deletingMsg)
+        msg.success(ns.common["success"])
+      except Exception as e:
+        spinner.fail(deletingMsg)
+        msg.default(e)
+        msg.error(ns.errors["delete_error"].format(target=target)) 
+
   # ----------------------------------------------------
 
   # Name: mkdir
@@ -323,24 +308,20 @@ class App:
 
   # ----------------------------------------------------
 
-  # Name: delete
-  # Desc: Delete local or remote file/directory
+  # Name: changeEnv
+  # Desc: Change current working environment
   # Args: void
   # Return: void
 
-  def delete(self):
-    target = getSingleActionParam(act["Delete"], self.action)
-    try:
-      if self.env == envs["Local"]:
-        self.deleteLocal(target)
-      else:
-        self.pingServer()
-        if self.connected:
-          self.deleteRemote(target)
-    except Exception as e:
-      msg.default(e)
-      msg.error(ns.errors["delete_error"].format(target=target)) 
-
+  def changeEnv(self):
+    changeTo = getSingleActionParam(act["ChangeEnv"], self.action)
+    if changeTo == envs["Local"]:
+      self.env = envs["Local"]
+    else:
+      self.pingServer()
+      if self.connected:
+        self.env = envs["Remote"]
+      
   # ----------------------------------------------------
 
   # Name: cd

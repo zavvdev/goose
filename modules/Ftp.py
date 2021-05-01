@@ -2,30 +2,26 @@ import os
 from ftpretty import ftpretty as FTP
 from utils.getNextPath import getNextPath
 from utils.getTimestamp import getTimestamp
-from modules.Namespace import Namespace
-from modules.Message import Message
-
-ns = Namespace()
-msg = Message()
 
 # Name: Ftp
 # Desc: Provide additional features for ftp.
 #       Expand capabilities of inherited module
 # Inherits: ftpretty
 # Methods: 
-#   - exists (check if a file exists)
-#   - isDir (check if a file is a directory)
-#   - isFile (check if a file is a file)
-#   - rmTree (delete a file tree)
-#   - putFile (upload a single file to the server)
-#   - getFile (download a single file from the server)
-#   - putTree (upload a file tree to the server)
-#   - getTree (download a file tree from the server)
+#   - exists (check if file exists)
+#   - isDir (check if file is a directory)
+#   - isFile (check if file is a file)
+#   - isBrokenSymlink (check if file is a broken symlink)
+#   - rmTree (delete file tree)
+#   - putFile (upload single file to the server)
+#   - getFile (download single file from the server)
+#   - putTree (upload file tree to the server)
+#   - getTree (download file tree from the server)
 
 class Ftp(FTP):
 
   # Name: exists
-  # Desc: Check if a file exists
+  # Desc: Check if file exists
   # Args: target (string), currentPath (string)
   # Return: boolean
 
@@ -39,7 +35,7 @@ class Ftp(FTP):
   # ----------------------------------------------------
 
   # Name: isDir
-  # Desc: Check if a file is a directory
+  # Desc: Check if file is a directory
   # Args: target (string)
   # Return: boolean
 
@@ -54,7 +50,7 @@ class Ftp(FTP):
   # ----------------------------------------------------
 
   # Name: isFile
-  # Desc: Check if a file is a file
+  # Desc: Check if file is a file
   # Args: target (string)
   # Return: boolean
 
@@ -68,8 +64,26 @@ class Ftp(FTP):
 
   # ----------------------------------------------------
 
+  # Name: isBrokenSymlink
+  # Desc: Check if file is a broken symlink
+  # Args: path (string)
+  # Return: boolean
+
+  def isBrokenSymlink(self, path):
+    if os.path.islink(path):
+      targetPath = os.readlink(path)
+      if not os.path.isabs(targetPath):
+        targetPath = os.path.join(os.path.dirname(path), targetPath)             
+      if not os.path.exists(targetPath):
+        return True
+      else:
+        return False
+    return False
+
+  # ----------------------------------------------------
+
   # Name: rmTree
-  # Desc: Delete a file tree
+  # Desc: Delete file tree
   # Args: path (string)
   # Return: void
 
@@ -80,14 +94,13 @@ class Ftp(FTP):
       if target["directory"] == "d":
         self.rmTree(preparedTargetPath)
       else:
-        msg.default(ns.common["deleting"] + preparedTargetPath)
         self.delete(preparedTargetPath)
     self.rmd(path)
 
   # ----------------------------------------------------
 
   # Name: putFile
-  # Desc: Upload a single file to the server
+  # Desc: Upload single file to the server
   # Args: targetPath (string),
   #       exists (boolean=False),
   #       overwrite (boolean=True)
@@ -99,13 +112,12 @@ class Ftp(FTP):
     if not overwrite and exists:
       timestamp = getTimestamp()
       fileNameToUpload = "{time}_{file}".format(time=timestamp, file=fileName)
-    msg.default(ns.common["uploading"] + targetPath)
     self.put(targetPath, fileNameToUpload)
 
   # ----------------------------------------------------
 
   # Name: getFile
-  # Desc: Download a single file from the server
+  # Desc: Download single file from the server
   # Args: targetPath (string),
   #       exists (boolean=False),
   #       overwrite (boolean=True)
@@ -118,13 +130,12 @@ class Ftp(FTP):
       timestamp = getTimestamp()
       fileNameToCreate = "{time}_{file}".format(time=timestamp, file=fileName)
     localFileName = getNextPath(saveToPath, fileNameToCreate)
-    msg.default(ns.common["downloading"] + targetPath)
     self.get(targetPath, localFileName)
 
   # ----------------------------------------------------
 
   # Name: putTree
-  # Desc: Upload a file tree to the server
+  # Desc: Upload file tree to the server
   # Args: targetPath (string),
   #       exists (boolean=False),
   #       overwrite (boolean=True)
@@ -143,17 +154,15 @@ class Ftp(FTP):
     for el in os.listdir(targetPath):
       elPath = getNextPath(targetPath, el)
       remoteElPath = getNextPath(self.pwd(), el)
-      if os.path.islink(elPath):
-        msg.default(ns.common["skipping_symlink"] + elPath)
-        continue
       if os.path.isdir(elPath):
-        innerExists = False
-        if self.exists(el, self.pwd()):
-          innerExists = True
-        msg.default(ns.common["uploading"] + elPath)
-        self.putTree(elPath, innerExists)
-      else:
-        msg.default(ns.common["uploading"] + elPath)
+        if not self.isBrokenSymlink(elPath):
+          innerExists = False
+          if self.exists(el, self.pwd()):
+            innerExists = True
+          self.putTree(elPath, innerExists)
+      if self.isBrokenSymlink(elPath):
+        continue
+      if os.path.isfile(elPath):
         self.put(elPath, el)
     backPath = getNextPath(self.pwd(), "..")
     self.cwd(backPath)
@@ -161,7 +170,7 @@ class Ftp(FTP):
   # ----------------------------------------------------
 
   # Name: getTree
-  # Desc: Download a file tree from the server
+  # Desc: Download file tree from the server
   # Args: targetPath (string),
   #       exists (boolean=False),
   #       overwrite (boolean=True)
@@ -185,11 +194,9 @@ class Ftp(FTP):
         innerExists = False
         if os.path.exists(localElPath):
           innerExists = True
-        msg.default(ns.common["downloading"] + elPath)
         self.getTree(elPath, innerExists)
       else:
         localFileName = getNextPath(os.getcwd(), el["name"])
-        msg.default(ns.common["downloading"] + elPath)
         self.get(elPath, localFileName)  
     backPath = getNextPath(os.getcwd(), "..")
     os.chdir(backPath)
