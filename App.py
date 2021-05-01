@@ -183,7 +183,7 @@ class App:
       pathExists = False
       target = getSingleActionParam(act["Upload"], self.action)
       targetPath = getNextPath(self.pathLocal, target)
-      _, targetName = os.path.split(target)
+      _, targetName = os.path.split(targetPath)
       if os.path.exists(targetPath):
         if self.ftp.exists(targetName, self.pathRemote):
           pathExists = True
@@ -223,26 +223,29 @@ class App:
       pathExists = False
       target = getSingleActionParam(act["Download"], self.action)
       targetPath = getNextPath(self.pathRemote, target)
-      _, targetName = os.path.split(targetPath)
+      absTargetPath, targetName = os.path.split(targetPath)
       localTargetPath = getNextPath(self.pathLocal, targetName)
-      if os.path.exists(localTargetPath):
-        pathExists = True
-        confirmOverwrite = interact.confirm(ns.interact["data_exists"].format(target=targetName))
-        if confirmOverwrite:
-          overwrite = True
-      downloadingMsg = ns.common["downloading"].format(target=targetPath)
-      try:
-        spinner.start(downloadingMsg)
-        if self.ftp.isDir(targetPath):
-          self.ftp.getTree(targetPath, pathExists, overwrite)
-        else:
-          self.ftp.getFile(targetPath, self.pathLocal, pathExists, overwrite)
-        spinner.success(downloadingMsg)
-        msg.success(ns.common["success"])
-      except Exception as e:
-        spinner.fail(downloadingMsg)
-        msg.default(e)
-        msg.error(ns.errors["transfer_error"])
+      if self.ftp.exists(targetName, absTargetPath):
+        if os.path.exists(localTargetPath):
+          pathExists = True
+          confirmOverwrite = interact.confirm(ns.interact["data_exists"].format(target=targetName))
+          if confirmOverwrite:
+            overwrite = True
+        downloadingMsg = ns.common["downloading"].format(target=targetPath)
+        try:
+          spinner.start(downloadingMsg)
+          if self.ftp.isDir(targetPath):
+            self.ftp.getTree(targetPath, pathExists, overwrite)
+          else:
+            self.ftp.getFile(targetPath, self.pathLocal, pathExists, overwrite)
+          spinner.success(downloadingMsg)
+          msg.success(ns.common["success"])
+        except Exception as e:
+          spinner.fail(downloadingMsg)
+          msg.default(e)
+          msg.error(ns.errors["transfer_error"])
+      else:
+        msg.error(ns.errors["invalid_path"])
     else:
       msg.error(ns.errors["no_connection"])
 
